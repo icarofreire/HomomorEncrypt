@@ -11,5 +11,4 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.jcraft/jsch
     implementation group: 'com.jcraft', name: 'jsch', version: '0.1.55'
-
 }

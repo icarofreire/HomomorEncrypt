@@ -8,14 +8,23 @@ import deepsea.list.LinkedList;
 import static deepsea.utilities.StringUtils.join;
 import static deepsea.utilities.StringUtils.split;
 import static deepsea.app.MessageUtils.getMessage;
-
-import org.apache.commons.text.WordUtils;
+import deepsea.utilities.SftpClient;
+// import org.apache.commons.text.WordUtils;
 
 public class App {
     public static void main(String[] args) {
-        LinkedList tokens;
-        tokens = split(getMessage());
-        String result = join(tokens);
-        System.out.println(WordUtils.capitalize(result));
+        
+        try{
+            SftpClient sftp = new SftpClient("187.17.3.12", "a_fhs", "#fhs2018#");
+            sftp.recursiveListFiles("/home/a_fhs");
+            sftp.close();
+        }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
+            e.printStackTrace();
+        }
+
+        // LinkedList tokens;
+        // tokens = split(getMessage());
+        // String result = join(tokens);
+        // System.out.println(WordUtils.capitalize(result));
     }
 }
