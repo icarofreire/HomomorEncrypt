@@ -9,18 +9,28 @@ import static deepsea.utilities.StringUtils.join;
 import static deepsea.utilities.StringUtils.split;
 import static deepsea.app.MessageUtils.getMessage;
 import deepsea.utilities.SftpClient;
+import deepsea.utilities.CompactarArquivosZip;
 // import org.apache.commons.text.WordUtils;
 
 public class App {
     public static void main(String[] args) {
         
+        // try{
+        //     SftpClient sftp = new SftpClient("187.17.3.12", "a_fhs", "#fhs2018#");
+        //     sftp.recursiveListFiles("/home/a_fhs");
+        //     sftp.close();
+        // }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
+        //     e.printStackTrace();
+        // }
+
+        CompactarArquivosZip cp = new CompactarArquivosZip();
         try{
-            SftpClient sftp = new SftpClient("187.17.3.12", "a_fhs", "#fhs2018#");
-            sftp.recursiveListFiles("/home/a_fhs");
-            sftp.close();
-        }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
-            e.printStackTrace();
+            // cp.zipDirectory("/home/icaro/Downloads/dicom/teste", "tudo");
+            cp.unzipFile("tudo.zip", "/home/icaro/Downloads/dicom/testeUnZIPx");
+        }catch(java.io.IOException ex){
+            ex.printStackTrace();
         }
+        System.out.println("OK. ;)");
 
         // LinkedList tokens;
         // tokens = split(getMessage());
