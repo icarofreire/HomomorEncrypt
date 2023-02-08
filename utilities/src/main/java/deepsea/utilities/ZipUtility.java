@@ -1,6 +1,3 @@
-/*
- * A simple SFTP client using JSCH http://www.jcraft.com/jsch/
- */
 package deepsea.utilities;
 
 import java.io.File;
@@ -20,8 +17,23 @@ import java.nio.file.Paths;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 
-
-public final class CompactarArquivosZip {
+/*\/
+* ATENÇÃO PARA COMPACTAÇÃO DE ARQUIVOS DICOM.
+* 
+* Colégio Americano de Radiologia (American College of Radiology),
+* não fornecem recomendações claras para compressão, existem certos
+* tipos de estudos de imagem que são proibidos de serem compactados.
+* Segundo a Associação Canadense de Radiologistas(Canadian Association of Radiologists),
+* dependendo da modalidade usada para a imagem e da parte específica do corpo, a compressão pode ou não ser recomendada.
+* 
+* Embora ambos sejam permitidos na maioria das circunstâncias -- lossless(reversível) e lossy(irreversível) --,
+* nunca recomendamos o uso de lossy compression.
+* Esse tipo de compactação realmente causa a perda irreversível dos dados da imagem.
+* Há uma série de lossless methods("métodos sem perdas") disponíveis, com os benefícios da
+* lossy compression(compactação com perdas) sendo aprimorados apenas marginalmente.
+* Portanto, fique com a compactação sem perdas(lossless compression).
+*/
+public final class ZipUtility {
 
 
     public void zipDirectory(String caminhoPasta, String nomeArquivoCompactar) throws IOException {
@@ -61,7 +73,7 @@ public final class CompactarArquivosZip {
     public void unzipFile(String fileZip, String pastaDesc) throws FileNotFoundException {
         Path filePathToUnzip = Path.of(fileZip);
         Path targetDir = Paths.get(pastaDesc);
-        if(!targetDir.toFile().exists()){
+        if(!targetDir.toFile().exists() && filePathToUnzip.toFile().exists()){
             //Open the file
             try (ZipFile zip = new ZipFile(filePathToUnzip.toFile())) {
 
@@ -97,7 +109,7 @@ public final class CompactarArquivosZip {
                 }
             } catch (IOException e) { e.printStackTrace(); }
         }else{
-            System.out.println("Pasta já existe!");
+            System.out.println("Pasta já existe, ou arquivo .zip não existe.");
         }
     }
 

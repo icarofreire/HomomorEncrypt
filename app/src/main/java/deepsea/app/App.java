@@ -9,8 +9,7 @@ import static deepsea.utilities.StringUtils.join;
 import static deepsea.utilities.StringUtils.split;
 import static deepsea.app.MessageUtils.getMessage;
 import deepsea.utilities.SftpClient;
-import deepsea.utilities.CompactarArquivosZip;
-// import org.apache.commons.text.WordUtils;
+import deepsea.utilities.ZipUtility;
 
 public class App {
     public static void main(String[] args) {
@@ -23,18 +22,13 @@ public class App {
         //     e.printStackTrace();
         // }
 
-        CompactarArquivosZip cp = new CompactarArquivosZip();
-        try{
-            // cp.zipDirectory("/home/icaro/Downloads/dicom/teste", "tudo");
-            cp.unzipFile("tudo.zip", "/home/icaro/Downloads/dicom/testeUnZIPx");
-        }catch(java.io.IOException ex){
-            ex.printStackTrace();
-        }
-        System.out.println("OK. ;)");
+        // ZipUtility zip = new ZipUtility();
+        // try{
+        //     // zip.zipDirectory("/home/icaro/Downloads/dicom/teste", "tudo");
+        //     zip.unzipFile("tudo.zip", "/home/icaro/Downloads/dicom/testeUnZIPx");
+        // }catch(java.io.IOException ex){
+        //     ex.printStackTrace();
+        // }
 
-        // LinkedList tokens;
-        // tokens = split(getMessage());
-        // String result = join(tokens);
-        // System.out.println(WordUtils.capitalize(result));
     }
 }
