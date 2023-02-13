@@ -76,9 +76,8 @@ public final class ParseDicom {
 				String elementNumber = insertZeros(Integer.toHexString(k.getElementNumber()));
 
 				String tags = "(" + grupoId + "," + elementNumber + ")";
-				String procedimentoTag = ((semanticTags.get(tags) != null) ? (String.valueOf(semanticTags.get(tags).get("name"))) : (""));
+				String procedimentoTag = ((semanticTags.get(tags) != null) ? (String.valueOf(semanticTags.get(tags).get("name"))) : (tags));
 				tagsValues.put(procedimentoTag, String.valueOf(v.getValue()));
-				// System.out.println( tags + " >> " + v.getValue() + " : " + procedimentoTag );
 			});
 		}
 	}

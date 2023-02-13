@@ -12,6 +12,7 @@ import deepsea.utilities.SftpClient;
 import deepsea.utilities.ZipUtility;
 import deepsea.utilities.ParseDicom;
 import deepsea.utilities.JSONUtils;
+import deepsea.utilities.LogFile;
 
 public class App {
     public static void main(String[] args) {
