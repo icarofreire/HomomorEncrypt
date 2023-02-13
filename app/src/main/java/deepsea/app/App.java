@@ -35,12 +35,11 @@ public class App {
         ParseDicom pd = new ParseDicom();
         try{
             pd.lerDicom("/home/icaro/Downloads/dicom/teste/WILLIANE_VITORIA_FONSECA_SILVA.CT.ABDOMEN_ABD_TRI_FASICO_MANUAL_(ADULT).0004.0001.2020.01.22.11.18.07.32196.464565879.IMA");
+
+            pd.exibirValoresDICOM();
         }catch(java.io.IOException | java.lang.NegativeArraySizeException | ClassNotFoundException ex){
             ex.printStackTrace();
         }
-
-        // JSONUtils j = new JSONUtils();
-        // j.readJSON();
 
     }
 }

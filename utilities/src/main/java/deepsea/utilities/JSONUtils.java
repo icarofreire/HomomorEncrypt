@@ -15,6 +15,7 @@ import java.io.Reader;
 
 /* \/ Gson; */
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * Ex:
@@ -22,10 +23,10 @@ import com.google.gson.Gson;
  */
 public final class JSONUtils {
 
-    private HashMap<String, Object> mapa = new HashMap<String, Object>();
+    private HashMap<String,HashMap<String,Object>> semanticTags = new HashMap<String,HashMap<String,Object>>();
 
-    public HashMap<String, Object> getMapaJson() {
-        return mapa;
+    public HashMap<String,HashMap<String,Object>> getMapaJson() {
+        return semanticTags;
     }
 
     public void readJSON() {
@@ -41,13 +42,7 @@ public final class JSONUtils {
             Reader reader = Files.newBufferedReader(resourceDirectory);
 
             // convert JSON file to map
-            Map<?, ?> map = gson.fromJson(reader, Map.class);
-            mapa = (HashMap<String, Object>)map;
-
-            // // print map entries
-            // for (Map.Entry<?, ?> entry : map.entrySet()) {
-            //     System.out.println(entry.getKey() + " --> " + entry.getValue());
-            // }
+            semanticTags = gson.fromJson(reader, new TypeToken<HashMap<String,HashMap<String,Object>>>() {}.getType());
 
             // close reader
             reader.close();

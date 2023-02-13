@@ -152,9 +152,7 @@ public abstract class DicomReader implements Closeable {
 			// dataSet.getElems().addAll(value2);
 			// return dataSet;
 		}
-		String classe = (value != null) ? (value.getClass().getSimpleName()) : ("");
-
-		// System.out.println( Integer.toHexString(tag.getGroupId()) + "," + Integer.toHexString(tag.getElementNumber()) + " >> " + value + " -> " + classe + " VR: " + vr + " len: " + len );
+		// System.out.println( Integer.toHexString(tag.getGroupId()) + "," + Integer.toHexString(tag.getElementNumber()) + " >> " + value + " -> " + " VR: " + vr + " len: " + len );
 		return new DataElement(tag, vr, value, len);
 	}
 
