@@ -1,5 +1,5 @@
 /*
- * A simple SFTP client using JSCH http://www.jcraft.com/jsch/
+ * Classe para interpretar arquivos DICOM;
  */
 package deepsea.utilities;
 
@@ -23,7 +23,7 @@ import org.dicom.io.*;
 import deepsea.utilities.JSONUtils;
 
 /**
- * A simple SFTP client using JSCH http://www.jcraft.com/jsch/
+ * Classe para interpretar arquivos DICOM;
  */
 public final class ParseDicom {
 
