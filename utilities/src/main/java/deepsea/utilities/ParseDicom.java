@@ -3,12 +3,8 @@
  */
 package deepsea.utilities;
 
-// import org.dcm4che3.data.Attributes;
-// import org.dcm4che3.io.DicomInputStream;
-// import org.dcm4che3.util.TagUtils;    
 import java.io.File;
 import java.io.IOException;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,6 +28,36 @@ import deepsea.utilities.JSONUtils;
 public final class ParseDicom {
 
 	private HashMap<String, String> tagsValues = new HashMap<String, String>();
+
+	private final List<Integer> listTags = java.util.Arrays.asList(
+		0x0010, 0x0020,
+		0x0010, 0x0010,
+		0x0010, 0x1010,
+		0x0010, 0x1020,
+		0x0010, 0x0030,
+		0x0010, 0x0040,
+		0x0010, 0x1040,
+		0x0018, 0x5100,
+		0x0020, 0x0010,
+		0x0008, 0x1030,
+		0x0018, 0x0015,
+		0x0008, 0x0020,
+		0x0008, 0x0080,
+		0x0008, 0x0081
+	);
+
+	public boolean seContainTags(List<Integer> listTags, int grup, int ele){
+		for(int i=0; i<listTags.size(); i++){
+			if((i+1) < listTags.size()){
+				int par1 = Integer.decode(String.valueOf(listTags.get(i)));
+				int par2 = Integer.decode(String.valueOf(listTags.get(i+1)));
+				if(par1 == grup && par2 == ele){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	public HashMap<String, String> getTagsValues(){
 		return tagsValues;
@@ -61,7 +87,8 @@ public final class ParseDicom {
 
 		try (DicomReader target = new DicomExplicitReader(new LittleEndianBinaryReader(bis))) {
 			List<Map<Tag, DataElement>> outs = target.read();
-			associarSemanticaTags(outs);
+			// associarSemanticaTags(outs);
+			shortInfoDicom(outs);
 		}
 	}
 
@@ -80,6 +107,27 @@ public final class ParseDicom {
 				tagsValues.put(procedimentoTag, String.valueOf(v.getValue()));
 			});
 		}
+	}
+
+	private HashMap<String,String> shortInfoDicom(List<Map<Tag, DataElement>> outs){
+		HashMap<String,String> semanticTags = new HashMap<String,String>();
+		for(Map<Tag, DataElement> elem: outs){
+			elem.forEach((k, v) -> {
+				String grupoId = insertZeros(Integer.toHexString(k.getGroupId()));
+				String elementNumber = insertZeros(Integer.toHexString(k.getElementNumber()));
+				String tags = "(" + grupoId + "," + elementNumber + ")";
+				boolean setags =
+				seContainTags(listTags,
+					k.getGroupId(),
+					k.getElementNumber()
+				);
+				if(setags){
+					semanticTags.put(tags, String.valueOf(v.getValue()));
+					System.out.println( tags + " : " +  String.valueOf(v.getValue()) + " -> " + " C:" + k.getGroupId() + ":" + k.getElementNumber() );
+				}
+			});
+		}
+		return semanticTags;
 	}
 
 }
