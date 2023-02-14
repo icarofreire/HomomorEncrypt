@@ -6,6 +6,7 @@ package deepsea.utilities;
 import java.io.File;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.io.IOException;
 
 /**
@@ -15,19 +16,23 @@ public final class LogFile {
 
     private Logger logger;
     private FileHandler handler;
+    private final String arquivoLog = "deepsea.log";
+    private final String nomeLog = "deepsea";
 
     public LogFile(){
         try{
-            
-            File fileLog = java.nio.file.Paths.get("deepsea.log").toFile();
+            File fileLog = java.nio.file.Paths.get(arquivoLog).toFile();
             if(!fileLog.exists()){
-                this.handler = new FileHandler("deepsea.log", true);
+                this.handler = new FileHandler(arquivoLog, true);
+                this.handler.setFormatter(new SimpleFormatter());
+                this.logger = Logger.getLogger(nomeLog);
                 this.logger.addHandler(this.handler);
             }else{
-                this.logger = Logger.getLogger("deepsea");
+                this.logger = Logger.getLogger(nomeLog);
             }
-            // this.logger.addHandler(this.handler);
-        }catch(IOException e){}
+        }catch(IOException e){
+            e.printStackTrace();
+        }
     }
 
     /* \/ log de "mensagem de informação"; */
