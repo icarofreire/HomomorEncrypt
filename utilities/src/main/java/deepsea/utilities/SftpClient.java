@@ -6,6 +6,9 @@ package deepsea.utilities;
 import com.jcraft.jsch.*;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.List;
+import java.util.Arrays;
+import java.util.ArrayList;
 
 /**
  * A simple SFTP client using JSCH http://www.jcraft.com/jsch/
@@ -17,6 +20,16 @@ public final class SftpClient {
     private final JSch        jsch;
     private       ChannelSftp channel;
     private       Session     session;
+
+    private String pastaPai = null;
+    /*\/ ; */
+    private long conSub = 0;
+    /*\/ profundidade de pastas da recursividade; */
+    private final long maxProfund = 1000;
+     /*\/ ; */
+    private final List<String> filesTypes = Arrays.asList(".dcm", ".ima", ".css");
+
+    private final List<String> pastasFiles = new ArrayList<String>();
 
     /**
      * @param host     remote host
@@ -108,7 +121,7 @@ public final class SftpClient {
         int lastp = arq.lastIndexOf('.');
         if(lastp != -1){
             String ext = arq.substring(lastp, arq.length()).toLowerCase();
-            return (ext.equals(".dcm") || ext.equals(".ima"));
+            return (filesTypes.contains(ext));
         }else{
             return false;
         }
@@ -156,7 +169,21 @@ public final class SftpClient {
         }catch(SftpException e ){}
         return files;
     }
-    
+
+    private int quantDicoms(String remoteDir){
+        try{
+            final Vector<ChannelSftp.LsEntry> files = channel.ls(remoteDir);
+            if(!files.isEmpty()){
+                Vector<ChannelSftp.LsEntry> filt = files
+                .stream()
+                .filter(f -> this.seDICOM(f.getFilename()) )
+                .collect(java.util.stream.Collectors.toCollection(Vector::new));
+                return filt.size();
+            }
+        }catch(SftpException e ){}
+        return 0;
+    }
+
     /*\/ OBS: melhorar método para buscar recusivamente arquivos DICOM; */
     @SuppressWarnings("unchecked")
     public void recursiveListFiles(String remoteDir) throws SftpException, JSchException {
@@ -187,6 +214,57 @@ public final class SftpClient {
                 }
             }
         }
+    }
+
+    /* OBS: melhorar funcionamento; incompleto; */
+    public String chequeDeepVoltaBaseMax(String caminho){
+        int max = 10;
+        String cur = "";
+        String[] blocos = caminho.split(java.io.File.separator);
+        if(blocos.length > max){
+            for(int i=0; i<blocos.length-max; i++){
+                cur += blocos[i] + java.io.File.separator;
+            }
+        }else{
+            return caminho;
+        }
+        return cur;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void freeWalk(String remoteDir) throws SftpException, JSchException {
+        if (channel == null) {
+            throw new IllegalArgumentException("Connection is not available");
+        }
+        // System.out.printf("Listing [%s] -> [%d]...%n", remoteDir, this.pastasFiles.size());
+        channel.cd(remoteDir);
+        Vector<ChannelSftp.LsEntry> files = vetorConteudos(remoteDir);
+        if(files != null && !files.isEmpty()){
+            for (ChannelSftp.LsEntry file : files) {
+                var name        = file.getFilename();
+                var attrs       = file.getAttrs();
+
+                /*\/ entrar em subpastas; */
+                if((!name.equals(".") && !name.equals("..")) && attrs.isDir()){
+                    String subPasta = remoteDir + java.io.File.separator + name;
+                    Vector<ChannelSftp.LsEntry> sub = vetorConteudos(subPasta);
+                    int quan = quantDicoms(subPasta);
+                    if(sub != null && (this.conSub < this.maxProfund)){
+                        this.conSub++;
+                        if(quan > 0){
+                            this.pastasFiles.add(subPasta);
+                        }
+                        // System.out.println("sub: " + quan + " n: " + this.pastasFiles.size() );
+                        // subPasta = this.chequeDeepVoltaBaseMax(subPasta);
+                        freeWalk(subPasta);
+                    }
+                }
+            }
+        }
+    }
+
+    public List<String> getPastasFiles() {
+        return pastasFiles;
     }
 
     /**
