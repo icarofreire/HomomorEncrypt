@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
+import deepsea.utilities.LogFile;
+import java.io.FileWriter;
+import java.io.IOException;
 
 /**
  * A simple SFTP client using JSCH http://www.jcraft.com/jsch/
@@ -26,7 +29,7 @@ public final class SftpClient {
     private String pastaBase = null;
 
     /*\/ profundidade de pastas da recursividade; */
-    private final long maxProfund = 1000;
+    private final long maxProfund = 500;
     /*\/ tipos de arquivos a procurar nas buscas em pasta e subpastas; */
     private final List<String> filesTypes = Arrays.asList(".dcm", ".ima", ".css");
 
@@ -36,6 +39,7 @@ public final class SftpClient {
     private final List<String> pastasFiles = new ArrayList<String>();
     /*\/ pastas que possuem profundo grau de subpastas encontradas na busca; */
     private final List<String> pastasEvit = new ArrayList<String>();
+    private final List<String> pastasVisi = new ArrayList<String>();
 
     /**
      * @param host     remote host
@@ -266,28 +270,31 @@ public final class SftpClient {
         if(this.pastaBase == null){
             this.pastaBase = remoteDir;
         }
-        channel.cd(remoteDir);
-        Vector<ChannelSftp.LsEntry> files = vetorConteudos(remoteDir);
-        if(files != null && !files.isEmpty()){
-            for (ChannelSftp.LsEntry file : files) {
-                var name        = file.getFilename();
-                var attrs       = file.getAttrs();
+        if(!this.pastasVisi.contains(remoteDir) && this.pastasVisi.size() < maxProfund){
+            channel.cd(remoteDir);
+            Vector<ChannelSftp.LsEntry> files = vetorConteudos(remoteDir);
+            if(files != null && !files.isEmpty()){
+                for (ChannelSftp.LsEntry file : files) {
+                    var name        = file.getFilename();
+                    var attrs       = file.getAttrs();
 
-                /*\/ entrar em subpastas; */
-                if((!name.equals(".") && !name.equals("..")) && attrs.isDir()){
-                    if(!this.seCaminhoEvitar(name)){
-                        String subPasta = remoteDir + java.io.File.separator + name;
-                        Vector<ChannelSftp.LsEntry> sub = vetorConteudos(subPasta);
-                        int quan = quantDicoms(subPasta);
-                        if(sub != null){
-                            if(quan > 0){
-                                this.pastasFiles.add(subPasta);
+                    /*\/ entrar em subpastas; */
+                    if((!name.equals(".") && !name.equals("..")) && attrs.isDir()){
+                        if(!this.seCaminhoEvitar(name)){
+                            this.pastasVisi.add(remoteDir);
+                            String subPasta = remoteDir + java.io.File.separator + name;
+                            Vector<ChannelSftp.LsEntry> sub = vetorConteudos(subPasta);
+                            int quan = quantDicoms(subPasta);
+                            if(sub != null){
+                                if(quan > 0){
+                                    this.pastasFiles.add(subPasta);
+                                }
+                                // System.out.println("sub: " + quan + " n: " + this.pastasFiles.size() );
+                                String pastaRet = this.chequeDeepVoltaBaseMax(subPasta);
+                                if(pastaRet != null) subPasta = pastaRet;
+
+                                freeWalk(subPasta);
                             }
-                            // System.out.println("sub: " + quan + " n: " + this.pastasFiles.size() );
-                            String pastaRet = this.chequeDeepVoltaBaseMax(subPasta);
-                            if(pastaRet != null) subPasta = pastaRet;
-
-                            freeWalk(subPasta);
                         }
                     }
                 }
@@ -297,6 +304,21 @@ public final class SftpClient {
 
     public List<String> getPastasFiles() {
         return pastasFiles;
+    }
+
+    public void gerarLogTreeFiles(){
+        if(this.pastasFiles.size() > 0){
+            try {
+                FileWriter myWriter = new FileWriter("tree.txt");
+                for(String p: this.pastasFiles){
+                    myWriter.write(p + "\n");
+                }
+                myWriter.close();
+            } catch (IOException e) {
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+            }
+        }
     }
 
     /**

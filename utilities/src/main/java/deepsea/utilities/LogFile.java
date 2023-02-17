@@ -16,10 +16,20 @@ public final class LogFile {
 
     private Logger logger;
     private FileHandler handler;
-    private final String arquivoLog = "deepsea.log";
-    private final String nomeLog = "deepsea";
+    private String arquivoLog = "deepsea.log";
+    private String nomeLog = "deepsea";
 
     public LogFile(){
+        this.criarObterLog();
+    }
+
+    public LogFile(String nomeArquivoLog){
+        this.arquivoLog = nomeArquivoLog + ".log";
+        this.nomeLog = nomeArquivoLog;
+        this.criarObterLog();
+    }
+
+    private void criarObterLog(){
         try{
             File fileLog = java.nio.file.Paths.get(arquivoLog).toFile();
             if(!fileLog.exists()){

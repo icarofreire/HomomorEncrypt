@@ -21,10 +21,7 @@ public class App {
             SftpClient sftp = new SftpClient("187.17.3.12", "a_fhs", "#fhs2018#");
             sftp.freeWalk("/home/a_fhs");
             sftp.close();
-
-            for(String p: sftp.getPastasFiles()){
-                System.out.println(p);
-            }
+            sftp.gerarLogTreeFiles();
         }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
             e.printStackTrace();
         }
