@@ -9,6 +9,7 @@ import java.util.Vector;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * A simple SFTP client using JSCH http://www.jcraft.com/jsch/
@@ -21,15 +22,20 @@ public final class SftpClient {
     private       ChannelSftp channel;
     private       Session     session;
 
-    private String pastaPai = null;
     /*\/ ; */
-    private long conSub = 0;
+    private String pastaBase = null;
+
     /*\/ profundidade de pastas da recursividade; */
     private final long maxProfund = 1000;
-     /*\/ ; */
+    /*\/ tipos de arquivos a procurar nas buscas em pasta e subpastas; */
     private final List<String> filesTypes = Arrays.asList(".dcm", ".ima", ".css");
 
+    /*\/ profundidade de subpastas em uma pasta encontrada na busca; */
+    private final int maxSubpastas = 7;
+    /*\/ pasta que possui os arquivos procurados; */
     private final List<String> pastasFiles = new ArrayList<String>();
+    /*\/ pastas que possuem profundo grau de subpastas encontradas na busca; */
+    private final List<String> pastasEvit = new ArrayList<String>();
 
     /**
      * @param host     remote host
@@ -216,19 +222,39 @@ public final class SftpClient {
         }
     }
 
-    /* OBS: melhorar funcionamento; incompleto; */
-    public String chequeDeepVoltaBaseMax(String caminho){
-        int max = 10;
-        String cur = "";
+    /*\/ auxiliar no retorno da diferença de duas listas de arvores de diretórios; */
+    public <T> List<T> diffTwoLists(List<T>listOne, List<T>listTwo) {
+        List<T> differences = listOne.stream()
+            .filter(element -> !listTwo.contains(element))
+            .collect(Collectors.toList());
+        return differences;
+    }
+
+    /*\/ ; */
+    private String chequeDeepVoltaBaseMax(String caminho) {
+        String cur = null;
         String[] blocos = caminho.split(java.io.File.separator);
-        if(blocos.length > max){
-            for(int i=0; i<blocos.length-max; i++){
-                cur += blocos[i] + java.io.File.separator;
+        if(blocos.length > maxSubpastas){
+            String pastaProib = getPastaEvitar(this.pastaBase, caminho);
+            if(pastaProib != null){
+                pastasEvit.add(pastaProib);
+                cur = this.pastaBase; // << retorno a base;
             }
-        }else{
-            return caminho;
         }
         return cur;
+    }
+
+    private boolean seCaminhoEvitar(String caminho) {
+        List<String> fil = pastasEvit.stream().filter(f -> (f.indexOf(caminho) != -1)).collect(Collectors.toList());
+        return (fil.size() > 0);
+    }
+
+    private String getPastaEvitar(String pastaBase, String caminho) {
+        int ind = caminho.indexOf(pastaBase);
+        if(ind != -1){
+            return caminho.substring(0, caminho.indexOf(java.io.File.separator, pastaBase.length()+1));
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -236,7 +262,10 @@ public final class SftpClient {
         if (channel == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
-        // System.out.printf("Listing [%s] -> [%d]...%n", remoteDir, this.pastasFiles.size());
+        System.out.printf("Listing [%s] -> [%d]...%n", remoteDir, this.pastasFiles.size());
+        if(this.pastaBase == null){
+            this.pastaBase = remoteDir;
+        }
         channel.cd(remoteDir);
         Vector<ChannelSftp.LsEntry> files = vetorConteudos(remoteDir);
         if(files != null && !files.isEmpty()){
@@ -246,17 +275,20 @@ public final class SftpClient {
 
                 /*\/ entrar em subpastas; */
                 if((!name.equals(".") && !name.equals("..")) && attrs.isDir()){
-                    String subPasta = remoteDir + java.io.File.separator + name;
-                    Vector<ChannelSftp.LsEntry> sub = vetorConteudos(subPasta);
-                    int quan = quantDicoms(subPasta);
-                    if(sub != null && (this.conSub < this.maxProfund)){
-                        this.conSub++;
-                        if(quan > 0){
-                            this.pastasFiles.add(subPasta);
+                    if(!this.seCaminhoEvitar(name)){
+                        String subPasta = remoteDir + java.io.File.separator + name;
+                        Vector<ChannelSftp.LsEntry> sub = vetorConteudos(subPasta);
+                        int quan = quantDicoms(subPasta);
+                        if(sub != null){
+                            if(quan > 0){
+                                this.pastasFiles.add(subPasta);
+                            }
+                            // System.out.println("sub: " + quan + " n: " + this.pastasFiles.size() );
+                            String pastaRet = this.chequeDeepVoltaBaseMax(subPasta);
+                            if(pastaRet != null) subPasta = pastaRet;
+
+                            freeWalk(subPasta);
                         }
-                        // System.out.println("sub: " + quan + " n: " + this.pastasFiles.size() );
-                        // subPasta = this.chequeDeepVoltaBaseMax(subPasta);
-                        freeWalk(subPasta);
                     }
                 }
             }
