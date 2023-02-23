@@ -52,7 +52,7 @@ public abstract class DicomReader implements Closeable {
 			}
 		} catch (IOException ex) {
 			// logger.info("complete to read");
-			System.out.println("*** complete to read!!!");
+			// System.out.println("*** complete to read!!!");
 			return listElems;
 		}
 	}

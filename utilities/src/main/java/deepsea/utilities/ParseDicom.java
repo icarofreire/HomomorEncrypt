@@ -43,7 +43,8 @@ public final class ParseDicom {
 		0x0018, 0x0015,
 		0x0008, 0x0020,
 		0x0008, 0x0080,
-		0x0008, 0x0081
+		0x0008, 0x0081,
+		0x0054, 0x0400
 	);
 
 	public boolean seContainTags(List<Integer> listTags, int grup, int ele){
@@ -88,7 +89,7 @@ public final class ParseDicom {
 		try (DicomReader target = new DicomExplicitReader(new LittleEndianBinaryReader(bis))) {
 			List<Map<Tag, DataElement>> outs = target.read();
 			// associarSemanticaTags(outs);
-			shortInfoDicom(outs);
+			HashMap<String,String> values = shortInfoDicom(outs);
 		}
 	}
 
@@ -123,7 +124,7 @@ public final class ParseDicom {
 				);
 				if(setags){
 					semanticTags.put(tags, String.valueOf(v.getValue()));
-					System.out.println( tags + " : " +  String.valueOf(v.getValue()) + " -> " + " C:" + k.getGroupId() + ":" + k.getElementNumber() );
+					// System.out.println( tags + " : " +  String.valueOf(v.getValue()) + " -> " + " C:" + k.getGroupId() + ":" + k.getElementNumber() );
 				}
 			});
 		}

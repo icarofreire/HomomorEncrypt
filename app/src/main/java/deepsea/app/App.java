@@ -16,7 +16,7 @@ import deepsea.utilities.LogFile;
 
 public class App {
     public static void main(String[] args) {
-        
+
         try{
             SftpClient sftp = new SftpClient("187.17.3.12", "a_fhs", "#fhs2018#");
             sftp.freeWalk("/home/a_fhs");
