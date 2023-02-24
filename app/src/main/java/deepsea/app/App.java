@@ -9,6 +9,7 @@ import static deepsea.utilities.StringUtils.join;
 import static deepsea.utilities.StringUtils.split;
 import static deepsea.app.MessageUtils.getMessage;
 import deepsea.utilities.SftpClient;
+import deepsea.utilities.BuscasDicom;
 import deepsea.utilities.ZipUtility;
 import deepsea.utilities.ParseDicom;
 import deepsea.utilities.JSONUtils;
@@ -17,11 +18,22 @@ import deepsea.utilities.LogFile;
 public class App {
     public static void main(String[] args) {
 
+        // try{
+        //     SftpClient sftp = new SftpClient("187.17.3.12", "a_fhs", "#fhs2018#");
+        //     sftp.freeWalk("/home/a_fhs");
+        //     // sftp.close();
+        //     // sftp.gerarLogTreeFiles();
+        //     // sftp.ler();
+        // }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
+        //     e.printStackTrace();
+        // }
+
         try{
-            SftpClient sftp = new SftpClient("187.17.3.12", "a_fhs", "#fhs2018#");
-            sftp.freeWalk("/home/a_fhs");
-            sftp.close();
-            sftp.gerarLogTreeFiles();
+            BuscasDicom busca = new BuscasDicom("187.17.3.12", "a_fhs", "#fhs2018#");
+            busca.freeWalk("/home/a_fhs");
+            busca.close();
+            // busca.gerarLogTreeFiles();
+            // sftp.ler();
         }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
             e.printStackTrace();
         }

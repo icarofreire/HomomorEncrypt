@@ -17,15 +17,13 @@ import java.io.IOException;
 /**
  * A simple SFTP client using JSCH http://www.jcraft.com/jsch/
  */
-public final class SftpClient {
+public /*final*/ class SftpClient {
     private final String      host;
     private final int         port;
     private final String      username;
     private final JSch        jsch;
     private       ChannelSftp channel;
     private       Session     session;
-
-    private final treatProfound tProf = new treatProfound();
 
     /**
      * @param host     remote host
@@ -140,7 +138,7 @@ public final class SftpClient {
     }
 
     /*\/ vetor de conteúdos de um diretório; */
-    private Vector<ChannelSftp.LsEntry> vetorConteudos(String remoteDir){
+    public Vector<ChannelSftp.LsEntry> vetorConteudos(String remoteDir){
         Vector<ChannelSftp.LsEntry> files = null;
         try{
             files = channel.ls(remoteDir);
@@ -185,145 +183,6 @@ public final class SftpClient {
                 }
             }
         }
-    }
-
-    /*\/ auxiliar no retorno da diferença de duas listas de arvores de diretórios; */
-    public <T> List<T> diffTwoLists(List<T>listOne, List<T>listTwo) {
-        List<T> differences = listOne.stream()
-            .filter(element -> !listTwo.contains(element))
-            .collect(Collectors.toList());
-        return differences;
-    }
-
-    private class treatProfound {
-        /*\/ profundidade de pastas da recursividade; */
-        private final long maxProfund = 500;
-        /*\/ tipos de arquivos a procurar nas buscas em pasta e subpastas; */
-        private final List<String> filesTypes = Arrays.asList(".dcm", ".ima", ".css");
-        /*\/ pasta base onde a busca é iniciada; */
-        private String pastaBase = null;
-        /*\/ profundidade de subpastas em uma pasta encontrada na busca; */
-        private final int maxSubpastas = 7;
-        /*\/ pasta que possui os arquivos procurados; */
-        private final List<String> pastasFiles = new ArrayList<String>();
-        /*\/ pastas que possuem profundo grau de subpastas encontradas na busca; */
-        private final List<String> pastasEvit = new ArrayList<String>();
-        private final List<String> pastasVisi = new ArrayList<String>();
-
-        /*\/ ; */
-        private String chequeDeepVoltaBaseMax(String caminho) {
-            String cur = null;
-            String[] blocos = caminho.split(java.io.File.separator);
-            if(blocos.length > maxSubpastas){
-                String pastaProib = getPastaEvitar(this.pastaBase, caminho);
-                if(pastaProib != null){
-                    pastasEvit.add(pastaProib);
-                    cur = this.pastaBase; // << retorno a base;
-                }
-            }
-            return cur;
-        }
-
-        private boolean seCaminhoEvitar(String caminho) {
-            List<String> fil = pastasEvit.stream().filter(f -> (f.indexOf(caminho) != -1)).collect(Collectors.toList());
-            return (fil.size() > 0);
-        }
-
-        private String getPastaEvitar(String pastaBase, String caminho) {
-            int ind = caminho.indexOf(pastaBase);
-            if(ind != -1){
-                return caminho.substring(0, caminho.indexOf(java.io.File.separator, pastaBase.length()+1));
-            }
-            return null;
-        }
-
-        private void gerarLogTreeFiles(){
-            if(this.pastasFiles.size() > 0){
-                try {
-                    FileWriter myWriter = new FileWriter("tree.txt");
-                    for(String p: this.pastasFiles){
-                        myWriter.write(p + "\n");
-                    }
-                    myWriter.close();
-                } catch (IOException e) {
-                    System.out.println("An error occurred.");
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        /*\/ se arquivo é do tipo DICOM; */
-        private boolean seDICOM(String arq){
-            int lastp = arq.lastIndexOf('.');
-            if(lastp != -1){
-                String ext = arq.substring(lastp, arq.length()).toLowerCase();
-                return (filesTypes.contains(ext));
-            }else{
-                return false;
-            }
-        }
-
-        private int quantDicoms(String remoteDir){
-            try{
-                final Vector<ChannelSftp.LsEntry> files = channel.ls(remoteDir);
-                if(!files.isEmpty()){
-                    Vector<ChannelSftp.LsEntry> filt = files
-                    .stream()
-                    .filter(f -> this.seDICOM(f.getFilename()) )
-                    .collect(java.util.stream.Collectors.toCollection(Vector::new));
-                    return filt.size();
-                }
-            }catch(SftpException e ){}
-            return 0;
-        }
-
-        @SuppressWarnings("unchecked")
-        public void freeWalk(String remoteDir) throws SftpException, JSchException {
-            if (channel == null) {
-                throw new IllegalArgumentException("Connection is not available");
-            }
-            System.out.printf("Listing [%s] -> [%d]...%n", remoteDir, this.pastasFiles.size());
-            if(this.pastaBase == null){
-                this.pastaBase = remoteDir;
-            }
-            if(!this.pastasVisi.contains(remoteDir) && this.pastasVisi.size() < this.maxProfund){
-                channel.cd(remoteDir);
-                Vector<ChannelSftp.LsEntry> files = vetorConteudos(remoteDir);
-                if(files != null && !files.isEmpty()){
-                    for (ChannelSftp.LsEntry file : files) {
-                        var name        = file.getFilename();
-                        var attrs       = file.getAttrs();
-
-                        /*\/ entrar em subpastas; */
-                        if((!name.equals(".") && !name.equals("..")) && attrs.isDir()){
-                            if(!this.seCaminhoEvitar(name)){
-                                this.pastasVisi.add(remoteDir);
-                                String subPasta = remoteDir + java.io.File.separator + name;
-                                Vector<ChannelSftp.LsEntry> sub = vetorConteudos(subPasta);
-                                int quan = quantDicoms(subPasta);
-                                if(sub != null){
-                                    if(quan > 0){
-                                        this.pastasFiles.add(subPasta);
-                                    }
-                                    String pastaRet = this.chequeDeepVoltaBaseMax(subPasta);
-                                    if(pastaRet != null) subPasta = pastaRet;
-                                    freeWalk(subPasta);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-    }// end class treatProfound;
-
-    public void freeWalk(String remoteDir) throws SftpException, JSchException {
-        tProf.freeWalk(remoteDir);
-    }
-
-    public void gerarLogTreeFiles(){
-        tProf.gerarLogTreeFiles();
     }
 
     /**
@@ -381,5 +240,15 @@ public final class SftpClient {
         if (session != null && session.isConnected()) {
             session.disconnect();
         }
+    }
+
+    public void cd(String remoteDir) throws SftpException {
+        if (channel != null) {
+            channel.cd(remoteDir);
+        }
+    }
+
+    public ChannelSftp getChannel() {
+        return channel;
     }
 }
