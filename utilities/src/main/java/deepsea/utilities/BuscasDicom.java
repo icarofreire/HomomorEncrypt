@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.Vector;
 import java.util.List;
 import java.io.File;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public final class BuscasDicom extends SftpClient {
     /*\/ pastas que possuem profundo grau de subpastas encontradas na busca; */
     private final List<String> pastasEvit = new ArrayList<String>();
     private final List<String> pastasVisi = new ArrayList<String>();
+    private final String fileLogTree = "tree.txt";
 
     public BuscasDicom(String host, String username, String password) throws JSchException {
         super(host, username, password);
@@ -71,7 +73,7 @@ public final class BuscasDicom extends SftpClient {
     public void gerarLogTreeFiles(){
         if(this.pastasFiles.size() > 0){
             try {
-                FileWriter myWriter = new FileWriter("tree.txt");
+                FileWriter myWriter = new FileWriter(this.fileLogTree);
                 for(String p: this.pastasFiles){
                     myWriter.write(p + ":" + this.pastasQuantDicom.get(p) +"\n");
                 }
@@ -152,7 +154,7 @@ public final class BuscasDicom extends SftpClient {
     private HashMap<String, Integer> lerLogTree(){
         final HashMap<String, Integer> pastasQuan = new HashMap<String, Integer>();
         // pass the path to the file as a parameter
-        File file = new File("tree.txt");
+        File file = new File(this.fileLogTree);
         if(file.exists()){
             try{
                 Scanner sc = new Scanner(file);
@@ -172,28 +174,54 @@ public final class BuscasDicom extends SftpClient {
         return pastasQuan;
     }
 
+    // /*\/ auxiliar no retorno da diferença de duas listas de arvores de diretórios; */
+    // private <T> List<T> diffTwoLists(List<T>listOne, List<T>listTwo) {
+    //     List<T> differences = listOne.stream()
+    //         .filter(element -> !listTwo.contains(element))
+    //         .collect(Collectors.toList());
+    //     return differences;
+    // }
+
     /*\/ auxiliar no retorno da diferença de duas listas de arvores de diretórios; */
-    private <T> List<T> diffTwoLists(List<T>listOne, List<T>listTwo) {
-        List<T> differences = listOne.stream()
-            .filter(element -> !listTwo.contains(element))
-            .collect(Collectors.toList());
-        return differences;
+    private <K, V> Map<K, V> diffMaps(Map<K, V> first, Map<K, V> second) {
+        return first.entrySet().stream()
+            .filter(e -> !e.getValue().equals(second.get(e.getKey())))
+            .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+    }
+
+    /* \/
+    * */
+    public void getDiffLogAndServer(String remoteDir) throws SftpException, JSchException {
+        this.freeWalk(remoteDir);
+        this.close();
+        HashMap<String, Integer> pastasQuanInLog = this.lerLogTree();
+        if(pastasQuanInLog.size() > 0){
+            HashMap<String, Integer> diffmap = (HashMap<String, Integer>) diffMaps(this.pastasQuantDicom, pastasQuanInLog);
+            System.out.println( "*** DIFF -> " + diffmap.size() );
+            this.getFoldersDiffImages(diffmap);
+        }else{
+            /*\/ enviar as images obtidas sem a comparação com o arquivo de log; */
+            this.getFoldersDiffImages(this.pastasQuantDicom);
+        }
     }
 
     /* TODO;; OBS;; melhorar/continuar...
-    * ler arquivo de log das pastas; 
-    * fazer uma nova leitura dos diretórios;
-    * comparar as listas de pastas para obter diferenças de novos diretórios criados;
     * fazer novas leituras de arquivos dicoms a compactar e enviar a outros servidores;
     * */
-    private void lerLogTree(String remoteDir) throws SftpException, JSchException {
-        this.freeWalk(remoteDir);
-        HashMap<String, Integer> pastasQuan = this.lerLogTree();
-        List<String> pastas = pastasQuan.keySet().stream().collect(Collectors.toList());
-
-        List<String> pastasDiff = this.diffTwoLists(pastasFiles, pastas);
-        if(pastasDiff.size() > 0){
+    private void getFoldersDiffImages(HashMap<String, Integer> diffmap) {
+        int env = 0;
+        if(diffmap.size() > 0){
             /* ... buscas nas pastas diferenciadas com novos arquivos dicoms; */
+            for(Map.Entry<String, Integer> map : diffmap.entrySet()) {
+                String caminho = map.getKey();
+                int quan = map.getValue();
+                /*\/ ... compactar caminho para zip e enviar para servidor; */
+                env++;
+            }
+            /*\/ atualizar o arquivo de log com os novos caminhos enviados para o servidor; */
+            if(env > 0){
+                this.gerarLogTreeFiles();
+            }
         }
     }
 

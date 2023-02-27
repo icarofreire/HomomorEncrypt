@@ -30,10 +30,10 @@ public class App {
 
         try{
             BuscasDicom busca = new BuscasDicom("187.17.3.12", "a_fhs", "#fhs2018#");
-            busca.freeWalk("/home/a_fhs");
-            busca.close();
+            // busca.freeWalk("/home/a_fhs");
+            // busca.close();
             // busca.gerarLogTreeFiles();
-            // sftp.ler();
+            busca.getDiffLogAndServer("/home/a_fhs");
         }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
             e.printStackTrace();
         }
