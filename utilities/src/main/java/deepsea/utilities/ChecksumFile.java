@@ -37,4 +37,26 @@ public final class ChecksumFile {
         }catch(IOException | java.security.NoSuchAlgorithmException e){}
         return checksum;
     }
+
+    /*\/ generate the SHA-1 checksum for a file; */
+    public String SHA1Checksum(String filePath){
+        String checksum = null;
+        try{
+            byte[] data = Files.readAllBytes(Paths.get(filePath));
+            byte[] hash = MessageDigest.getInstance("SHA-1").digest(data);
+            checksum = new BigInteger(1, hash).toString(16);
+        }catch(IOException | java.security.NoSuchAlgorithmException e){}
+        return checksum;
+    }
+
+    /*\/ generate the SHA-1 checksum for a file; */
+    public String SHA1Checksum(File file){
+        String checksum = null;
+        try{
+            byte[] data = Files.readAllBytes(file.toPath());
+            byte[] hash = MessageDigest.getInstance("SHA-1").digest(data);
+            checksum = new BigInteger(1, hash).toString(16);
+        }catch(IOException | java.security.NoSuchAlgorithmException e){}
+        return checksum;
+    }
 }
