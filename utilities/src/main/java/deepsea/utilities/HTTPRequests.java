@@ -48,7 +48,6 @@ public final class HTTPRequests {
     }
 
     /* \/
-    *
     * // form parameters
     * Map<Object, Object> data = new HashMap<>();
     * data.put("username", "abc");
@@ -56,7 +55,7 @@ public final class HTTPRequests {
     * data.put("custom", "secret");
     * data.put("ts", System.currentTimeMillis());
     * */
-    public void sendPost(final Map<Object, Object> data) throws Exception {
+    public void sendPost(String url, final Map<Object, Object> data) throws Exception {
         // // form parameters
         // Map<Object, Object> data = new HashMap<>();
         // data.put("username", "abc");
@@ -66,9 +65,34 @@ public final class HTTPRequests {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .POST(buildFormDataFromMap(data))
-                .uri(URI.create("https://httpbin.org/post"))
+                .uri(URI.create(url))
                 .setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
                 .header("Content-Type", "application/x-www-form-urlencoded")
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        // print status code
+        System.out.println(response.statusCode());
+
+        // print response body
+        System.out.println(response.body());
+    }
+
+    public void sendPostJson(String url, String json) throws Exception {
+        // json formatted data
+        // String json = new StringBuilder()
+        //         .append("{")
+        //         .append("\"name\":\"mkyong\",")
+        //         .append("\"notes\":\"hello\"")
+        //         .append("}").toString();
+
+        // add json header
+        HttpRequest request = HttpRequest.newBuilder()
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .uri(URI.create(url))
+                .setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
+                .header("Content-Type", "application/json")
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -102,35 +126,35 @@ public final class HTTPRequests {
     }
 
     public HttpResponse<String> sendPostFile(String url, Path file, String... headers) throws IOException, InterruptedException {
-            HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .headers(headers)
-                .POST(null == file ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofFile(file))
-                .build();
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .headers(headers)
+            .POST(null == file ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofFile(file))
+            .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            // // print status code
-            // System.out.println(response.statusCode());
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        // // print status code
+        // System.out.println(response.statusCode());
 
-            // // print response body
-            // System.out.println(response.body());
-            return response;
+        // // print response body
+        // System.out.println(response.body());
+        return response;
     }
 
     public HttpResponse<String> sendPostFile(String url, File file, String... headers) throws IOException, InterruptedException {
-            HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .headers(headers)
-                .POST(null == file ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofFile(file.toPath()))
-                .build();
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .headers(headers)
+            .POST(null == file ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofFile(file.toPath()))
+            .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            // // print status code
-            // System.out.println(response.statusCode());
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        // // print status code
+        // System.out.println(response.statusCode());
 
-            // // print response body
-            // System.out.println(response.body());
-            return response;
+        // // print response body
+        // System.out.println(response.body());
+        return response;
     }
 
 }

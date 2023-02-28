@@ -88,8 +88,8 @@ public final class ParseDicom {
 
 		try (DicomReader target = new DicomExplicitReader(new LittleEndianBinaryReader(bis))) {
 			List<Map<Tag, DataElement>> outs = target.read();
-			// associarSemanticaTags(outs);
-			HashMap<String,String> values = shortInfoDicom(outs);
+			associarSemanticaTags(outs);
+			// HashMap<String,String> values = shortInfoDicom(outs);
 		}
 	}
 
