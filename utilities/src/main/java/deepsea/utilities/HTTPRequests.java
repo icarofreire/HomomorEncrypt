@@ -5,6 +5,8 @@ package deepsea.utilities;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
@@ -97,6 +99,38 @@ public final class HTTPRequests {
         Map<String, Object> map = new HashMap<String, Object>();
         map = (Map<String,Object>) gson.fromJson(json, map.getClass());
         return map;
+    }
+
+    public HttpResponse<String> sendPostFile(String url, Path file, String... headers) throws IOException, InterruptedException {
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .headers(headers)
+                .POST(null == file ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofFile(file))
+                .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            // // print status code
+            // System.out.println(response.statusCode());
+
+            // // print response body
+            // System.out.println(response.body());
+            return response;
+    }
+
+    public HttpResponse<String> sendPostFile(String url, File file, String... headers) throws IOException, InterruptedException {
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .headers(headers)
+                .POST(null == file ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofFile(file.toPath()))
+                .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            // // print status code
+            // System.out.println(response.statusCode());
+
+            // // print response body
+            // System.out.println(response.body());
+            return response;
     }
 
 }
