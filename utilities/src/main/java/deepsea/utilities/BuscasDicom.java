@@ -7,24 +7,32 @@ import com.jcraft.jsch.*;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.List;
-import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
+import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
-import deepsea.utilities.LogFile;
+import java.io.File;
+import java.nio.file.Files;
 import java.io.FileWriter;
-import java.util.Scanner;
 import java.io.IOException;
+import deepsea.utilities.LogFile;
 import deepsea.utilities.SftpClient;
+import deepsea.utilities.ZipUtility;
+import deepsea.utilities.ChecksumFile;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Buscas de arquivos DICOM;
  */
 public final class BuscasDicom extends SftpClient {
     /*\/ profundidade de pastas da recursividade; */
-    private final long maxProfund = 500;
+    private final long maxProfund = 50;//500;
     /*\/ tipos de arquivos a procurar nas buscas em pasta e subpastas; */
     private final List<String> filesTypes = Arrays.asList(".dcm", ".ima", ".css");
     /*\/ pasta base onde a busca é iniciada; */
@@ -38,6 +46,11 @@ public final class BuscasDicom extends SftpClient {
     private final List<String> pastasEvit = new ArrayList<String>();
     private final List<String> pastasVisi = new ArrayList<String>();
     private final String fileLogTree = "tree.txt";
+    private final String fileLogChecksum = "files-env.txt";
+    /*\/ nome do arquivo .zip para compactar os arquivos baixados do servidor; */
+    private final String nameFileCompactZip = "DownDicoms";
+    /*\/ caminho completo dos arquivos dicoms encontrados no servidor; */
+    private final List<String> filesDicom = new ArrayList<String>();
 
     public BuscasDicom(String host, String username, String password) throws JSchException {
         super(host, username, password);
@@ -145,6 +158,17 @@ public final class BuscasDicom extends SftpClient {
                                 freeWalk(subPasta);
                             }
                         }
+                    }else if(this.seDICOM(name)){
+                        String pathFile = remoteDir + java.io.File.separator + name;
+                        this.filesDicom.add(pathFile);
+                                    /*\/ /home/USUARIO-PC/Documentos/DeepSea/app/... */
+                            // Path resourceDirectory = Paths.get("..");
+                            // System.out.println( "B:" + resourceDirectory.toString() );
+                            // try{
+                            //     downloadFile(pathFile, "/home/icaro/Documentos/DeepSea/");
+                            // }catch(SftpException e){
+                            //     e.printStackTrace();
+                            // }
                     }
                 }
             }
@@ -174,35 +198,190 @@ public final class BuscasDicom extends SftpClient {
         return pastasQuan;
     }
 
-    // /*\/ auxiliar no retorno da diferença de duas listas de arvores de diretórios; */
-    // private <T> List<T> diffTwoLists(List<T>listOne, List<T>listTwo) {
-    //     List<T> differences = listOne.stream()
-    //         .filter(element -> !listTwo.contains(element))
-    //         .collect(Collectors.toList());
-    //     return differences;
+    // private List<String> lerLogChecksumFiles(){
+    //     final List<String> lcheks = new ArrayList<>();
+    //     // pass the path to the file as a parameter
+    //     File file = new File(this.fileLogChecksum);
+    //     if(file.exists()){
+    //         try{
+    //             Scanner sc = new Scanner(file);
+    //             while (sc.hasNextLine()){
+    //                 String linha = sc.nextLine();
+    //                 String ped[] = linha.split("\\|");
+    //                 if(ped.length > 0){
+    //                     lcheks.add(ped[1]);
+    //                     // System.out.println(ped[0] + " -> " + ped[1] + " -> " + ped[2]);
+    //                 }
+    //             }
+    //         }catch(java.io.FileNotFoundException e){}
+    //     }
+    //     return lcheks;
     // }
+    private List<String> lerLogEnvFiles(){
+        final List<String> lcheks = new ArrayList<>();
+        // pass the path to the file as a parameter
+        File file = new File(this.fileLogChecksum);
+        if(file.exists()){
+            try{
+                Scanner sc = new Scanner(file);
+                while (sc.hasNextLine()){
+                    String linha = sc.nextLine();
+                    String ped[] = linha.split("\\|");
+                    if(ped.length > 0){
+                        lcheks.add(ped[0]);
+                        // System.out.println(ped[0] + " -> " + ped[1] + " -> " + ped[2]);
+                    }
+                }
+            }catch(java.io.FileNotFoundException e){}
+        }
+        return lcheks;
+    }
 
     /*\/ auxiliar no retorno da diferença de duas listas de arvores de diretórios; */
-    private <K, V> Map<K, V> diffMaps(Map<K, V> first, Map<K, V> second) {
-        return first.entrySet().stream()
-            .filter(e -> !e.getValue().equals(second.get(e.getKey())))
-            .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+    private <T> List<T> diffTwoLists(List<T>listOne, List<T>listTwo) {
+        List<T> differences = listOne.stream()
+            .filter(element -> !listTwo.contains(element))
+            .collect(Collectors.toList());
+        return differences;
+    }
+
+    // /*\/ auxiliar no retorno da diferença de duas listas de arvores de diretórios; */
+    // private <K, V> Map<K, V> diffMaps(Map<K, V> first, Map<K, V> second) {
+    //     return first.entrySet().stream()
+    //         .filter(e -> !e.getValue().equals(second.get(e.getKey())))
+    //         .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+    // }
+
+    private void delDir(Path dir) {
+        try{
+            Files.walk(dir) // Traverse the file tree in depth-first order
+            .sorted(java.util.Comparator.reverseOrder())
+            .forEach(path -> {
+                try {
+                    Files.delete(path);  //delete each file or directory
+                } catch (IOException e) { e.printStackTrace(); }
+            });
+        }catch(IOException e){}
+    }
+
+    /*\/
+    * download dos arquivos dicoms do servidor;
+    * criar log de checksum dos arquivos;
+    * compactar arquivos dicoms;
+    * */
+    private void downDicomsECompact(final List<String> caminhoDicomsDown) {
+        if(caminhoDicomsDown.size() > 0){
+            File dirBase = new File(this.nameFileCompactZip);
+            if(!dirBase.exists()){
+                dirBase.mkdir();
+            }
+            int con = 0;//<< fins de testes;
+            boolean error = false;
+            for(String pathFile : caminhoDicomsDown){
+                try{
+                    if(con<5){//<< fins de testes;
+                        downloadFile(pathFile, dirBase.getAbsolutePath());
+                        con++;//<< fins de testes;
+                    }
+                }catch(SftpException e){
+                    error = true;
+                    e.printStackTrace();
+                }
+            }
+            if(!error){
+                // this.createChecksumFiles(dirBase);
+                // this.createLogFilesEnv();
+                boolean errorZip = false;
+                final ZipUtility zip = new ZipUtility();
+                try{
+                    zip.zipFiles(dirBase.listFiles(), this.nameFileCompactZip + ".zip");
+                    this.createLogFilesEnv();
+                }catch(java.io.IOException ex){
+                    errorZip = true;
+                    ex.printStackTrace();
+                }
+                if(!errorZip){
+                    /*\/ deletar pasta com arquivos dicoms baixados do servidor; */
+                    this.delDir(dirBase.toPath());
+                }
+            }
+        }
+    }
+
+    // /*\/ criar checksum de arquivos baixados do servidor; */
+    // private void createChecksumFiles(File dirBaseDicoms) {
+    //     if(dirBaseDicoms.exists()){
+    //         /*\/ date now(); */
+    //         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    //         String formattedDateTime = LocalDateTime.now().format(formatter);
+    //         final ChecksumFile sum = new ChecksumFile();
+    //         File[] files = dirBaseDicoms.listFiles();
+    //         File logCheck = new File(this.fileLogChecksum);
+    //         boolean append = logCheck.exists();
+    //         try {
+    //             FileWriter myWriter = new FileWriter(this.fileLogChecksum, append);
+    //             for(File file : files){
+    //                 String name = file.getName();
+    //                 String hash = sum.SHA1Checksum(file);
+    //                 myWriter.write(name + "|" + hash + "|" + formattedDateTime + ";\n");
+    //             }
+    //             myWriter.close();
+    //         } catch (IOException e) {
+    //             System.out.println("An error occurred.");
+    //             e.printStackTrace();
+    //         }
+    //     }
+    // }
+
+        /*\/ criar checksum de arquivos baixados do servidor; */
+    private void createLogFilesEnv() {
+        if(this.filesDicom.size() > 0){
+            /*\/ date now(); */
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+            String formattedDateTime = LocalDateTime.now().format(formatter);
+            File logCheck = new File(this.fileLogChecksum);
+            boolean append = logCheck.exists();
+            try {
+                FileWriter myWriter = new FileWriter(this.fileLogChecksum, append);
+                for(String file : this.filesDicom){
+                    myWriter.write(file + "|" + formattedDateTime + ";\n");
+                }
+                myWriter.close();
+            } catch (IOException e) {
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+            }
+        }
     }
 
     /* \/
     * */
     public void getDiffLogAndServer(String remoteDir) throws SftpException, JSchException {
         this.freeWalk(remoteDir);
-        this.close();
-        HashMap<String, Integer> pastasQuanInLog = this.lerLogTree();
-        if(pastasQuanInLog.size() > 0){
-            HashMap<String, Integer> diffmap = (HashMap<String, Integer>) diffMaps(this.pastasQuantDicom, pastasQuanInLog);
-            System.out.println( "*** DIFF -> " + diffmap.size() );
-            this.getFoldersDiffImages(diffmap);
-        }else{
-            /*\/ enviar as images obtidas sem a comparação com o arquivo de log; */
-            this.getFoldersDiffImages(this.pastasQuantDicom);
+        // this.close();
+        // HashMap<String, Integer> pastasQuanInLog = this.lerLogTree();
+
+        if(this.filesDicom.size() > 0){
+            List<String> lEnvFiles = this.lerLogEnvFiles();
+            if(lEnvFiles.size() > 0){
+                /*\/ arquivos diferentes que não foram baixados do servidor; */
+                List<String> diffFilesEnv = this.diffTwoLists(this.filesDicom, lEnvFiles);
+                if(diffFilesEnv.size() > 0) this.downDicomsECompact(diffFilesEnv);
+            }else{
+                this.downDicomsECompact(this.filesDicom);
+            }
         }
+
+        this.close();
+
+        // if(pastasQuanInLog.size() > 0){
+        //     HashMap<String, Integer> diffmap = (HashMap<String, Integer>) diffMaps(this.pastasQuantDicom, pastasQuanInLog);
+        //     System.out.println( "*** DIFF -> " + diffmap.size() );
+        //     this.getFoldersDiffImages(diffmap);
+        // }else{
+        //     /*\/ enviar as images obtidas sem a comparação com o arquivo de log; */
+        //     this.getFoldersDiffImages(this.pastasQuantDicom);
+        // }
     }
 
     /* TODO;; OBS;; melhorar/continuar...

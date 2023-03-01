@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.BufferedInputStream;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipFile;
@@ -111,6 +112,39 @@ public final class ZipUtility {
         }else{
             System.out.println("Pasta já existe, ou arquivo .zip não existe.");
         }
+    }
+
+    /**
+     * Compresses a list of files to a destination zip file
+     * @param listFiles A collection of files and directories
+     * @param destZipFile The path of the destination zip file
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public void zipFiles(File[] listFiles, String destZipFile) throws FileNotFoundException, IOException {
+        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(destZipFile));
+        for (File file : listFiles) {
+            if (!file.isDirectory()) {
+                this.zipFile(file, zos);
+            }
+        }
+        zos.flush();
+        zos.close();
+    }
+
+    /**
+     * Adds a file to the current zip output stream
+     * @param file the file to be added
+     * @param zos the current zip output stream
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public void zipFile(File file, ZipOutputStream zos) throws FileNotFoundException, IOException {
+        zos.putNextEntry(new ZipEntry(file.getName()));
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(
+                file));
+        this.InputStreamToOutputStream(bis, zos);
+        zos.closeEntry();
     }
 
 }
