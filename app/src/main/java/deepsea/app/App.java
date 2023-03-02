@@ -14,6 +14,7 @@ import deepsea.utilities.ZipUtility;
 import deepsea.utilities.ParseDicom;
 import deepsea.utilities.JSONUtils;
 import deepsea.utilities.LogFile;
+import deepsea.utilities.TimeExecution;
 
 public class App {
     public static void main(String[] args) {
@@ -29,10 +30,7 @@ public class App {
         // }
 
         try{
-            BuscasDicom busca = new BuscasDicom("187.17.3.12", "a_fhs", "#fhs2018#");
-            // busca.freeWalk("/home/a_fhs");
-            // busca.close();
-            // busca.gerarLogTreeFiles();
+            final BuscasDicom busca = new BuscasDicom("187.17.3.12", "a_fhs", "#fhs2018#");
             busca.getDiffLogAndServer("/home/a_fhs");
         }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
             e.printStackTrace();
@@ -46,13 +44,16 @@ public class App {
         //     ex.printStackTrace();
         // }
 
+        // TimeExecution.inicio();
         // ParseDicom pd = new ParseDicom();
         // try{
         //     pd.lerDicom("/home/icaro/Downloads/dicom/teste/WILLIANE_VITORIA_FONSECA_SILVA.CT.ABDOMEN_ABD_TRI_FASICO_MANUAL_(ADULT).0004.0001.2020.01.22.11.18.07.32196.464565879.IMA");
-        //     // pd.exibirValoresDICOM();
+        //     pd.exibirValoresDICOM();
         // }catch(java.io.IOException | java.lang.NegativeArraySizeException | ClassNotFoundException ex){
         //     ex.printStackTrace();
         // }
+        // TimeExecution.fim();
+        // TimeExecution.exibirTempo();
 
     }
 }
