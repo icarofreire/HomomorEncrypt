@@ -38,11 +38,11 @@ public final class BuscasDicom extends SftpClient {
     /*\/ pasta base onde a busca é iniciada; */
     private String pastaBase = null;
     /*\/ profundidade de subpastas em uma pasta encontrada na busca; */
-    private final int maxSubpastas = 7;
+    private final int maxSubpastas = 10;//7;
     /*\/ pastas que possuem profundo grau de subpastas encontradas na busca; */
     private final List<String> pastasEvit = new ArrayList<String>();
     private final List<String> pastasVisi = new ArrayList<String>();
-    /*\/ ; */
+    /*\/ arquvo de log de arquivos baixados do servidor; */
     private final String fileLogChecksum = "files-env.txt";
     /*\/ nome do arquivo .zip para compactar os arquivos baixados do servidor; */
     private final String nameFileCompactZip = "DownDicoms";
@@ -251,7 +251,9 @@ public final class BuscasDicom extends SftpClient {
         }
     }
 
-    /* \/
+    /* \/ navegar recursivamente em busca de arquivos dicoms,
+    a partir de uma pasta base do servidor;
+    efetuar downloads apenas de arquivos não registrados no log de arquivos enviados; 
     * */
     public void getDiffLogAndServer(String remoteDir) throws SftpException, JSchException {
         this.freeWalk(remoteDir);

@@ -29,12 +29,12 @@ public class App {
         //     e.printStackTrace();
         // }
 
-        try{
-            final BuscasDicom busca = new BuscasDicom("187.17.3.12", "a_fhs", "#fhs2018#");
-            busca.getDiffLogAndServer("/home/a_fhs");
-        }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
-            e.printStackTrace();
-        }
+        // try{
+        //     final BuscasDicom busca = new BuscasDicom("187.17.3.12", "a_fhs", "#fhs2018#");
+        //     busca.getDiffLogAndServer("/home/a_fhs");
+        // }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
+        //     e.printStackTrace();
+        // }
 
         // ZipUtility zip = new ZipUtility();
         // try{
@@ -44,16 +44,20 @@ public class App {
         //     ex.printStackTrace();
         // }
 
-        // TimeExecution.inicio();
-        // ParseDicom pd = new ParseDicom();
-        // try{
-        //     pd.lerDicom("/home/icaro/Downloads/dicom/teste/WILLIANE_VITORIA_FONSECA_SILVA.CT.ABDOMEN_ABD_TRI_FASICO_MANUAL_(ADULT).0004.0001.2020.01.22.11.18.07.32196.464565879.IMA");
-        //     pd.exibirValoresDICOM();
-        // }catch(java.io.IOException | java.lang.NegativeArraySizeException | ClassNotFoundException ex){
-        //     ex.printStackTrace();
-        // }
-        // TimeExecution.fim();
-        // TimeExecution.exibirTempo();
+        TimeExecution.inicio();
+        ParseDicom pd = new ParseDicom();
+        try{
+            // pd.lerDicom("/home/icaro/Downloads/dicom/teste/WILLIANE_VITORIA_FONSECA_SILVA.CT.ABDOMEN_ABD_TRI_FASICO_MANUAL_(ADULT).0004.0001.2020.01.22.11.18.07.32196.464565879.IMA");
+            // pd.lerDicom("/home/icaro/Downloads/dicom/teste/1.2.392.200036.9107.307.31409.20230303.82202.1068445.dcm");
+            // pd.lerDicom("/home/icaro/Downloads/dicom/teste/1.2.392.200036.9107.307.31409.20230303.55013.1068434.dcm");
+            // pd.lerDicom("/home/icaro/Downloads/dicom/teste/1.3.12.2.1107.5.1.7.136075.30000023022214293674500000474.dcm");
+            pd.lerDicom("/home/icaro/Downloads/dicom/teste/1.3.12.2.1107.5.1.7.136075.30000022111414210457000000274.dcm");
+            pd.exibirValoresDICOM();
+        }catch(java.io.IOException | java.lang.NegativeArraySizeException | ClassNotFoundException ex){
+            ex.printStackTrace();
+        }
+        TimeExecution.fim();
+        TimeExecution.exibirTempo();
 
     }
 }

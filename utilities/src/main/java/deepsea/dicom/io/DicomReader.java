@@ -44,15 +44,18 @@ public abstract class DicomReader implements Closeable {
 				Map<Tag, DataElement> elems = new TreeMap<>();
 				DataElement elem = readElement();
 
-				VRType type = VRType.of(elem.getVR().trim());
-				if (type != null) {
-					elems.put(elem.getTag(), elem);
-					listElems.add(elems);
+				if(elem.getVR() != null){
+					VRType type = VRType.of(elem.getVR().trim());
+					if (type != null) {
+						elems.put(elem.getTag(), elem);
+						listElems.add(elems);
+					}
 				}
 			}
 		} catch (IOException ex) {
 			// logger.info("complete to read");
 			// System.out.println("*** complete to read!!!");
+			// ex.printStackTrace();
 			return listElems;
 		}
 	}
@@ -129,11 +132,11 @@ public abstract class DicomReader implements Closeable {
 	private DataElement readElement() throws IOException {
 		// logger.info("readElement");
 		Tag tag = readTag();
-		// if (Tags.SQ_END_TAG.equals(tag) || Tags.ITEM_TAG.equals(tag) || Tags.ITEM_END_TAG.equals(tag)) {
-		// 	int len = binaryReader.readInt();
-		// 	// logger.info("{} {}", tag, len);
-		// 	return new DataElement(tag, null, null, len);
-		// }
+		if (Tags.SQ_END_TAG.equals(tag) || Tags.ITEM_TAG.equals(tag) || Tags.ITEM_END_TAG.equals(tag)) {
+			int len = binaryReader.readInt();
+			// logger.info("{} {}", tag, len);
+			return new DataElement(tag, null, null, len);
+		}
 		String vr = readVR();
 		int len = readLength(vr);
 		// logger.info("{} {} {}", tag, vr, len);
