@@ -16,6 +16,10 @@ import deepsea.utilities.JSONUtils;
 import deepsea.utilities.LogFile;
 import deepsea.utilities.TimeExecution;
 
+/*\/ parse dicom; */
+import AC_DicomIO.AC_DcmStructure;
+import AC_DicomIO.AC_DicomReader;
+
 public class App {
     public static void main(String[] args) {
 
@@ -44,18 +48,43 @@ public class App {
         //     ex.printStackTrace();
         // }
 
+        // TimeExecution.inicio();
+        // ParseDicom pd = new ParseDicom();
+        // try{
+        //     // pd.lerDicom("/home/icaro/Downloads/dicom/teste/WILLIANE_VITORIA_FONSECA_SILVA.CT.ABDOMEN_ABD_TRI_FASICO_MANUAL_(ADULT).0004.0001.2020.01.22.11.18.07.32196.464565879.IMA");
+        //     // pd.lerDicom("/home/icaro/Downloads/dicom/teste/1.2.392.200036.9107.307.31409.20230303.82202.1068445.dcm");
+        //     // pd.lerDicom("/home/icaro/Downloads/dicom/teste/1.2.392.200036.9107.307.31409.20230303.55013.1068434.dcm");
+        //     pd.lerDicom("/home/icaro/Downloads/dicom/teste/dicom-teste.dcm");
+        //     // pd.lerDicom("/home/icaro/Downloads/dicom/teste/1.3.12.2.1107.5.1.7.136075.30000023022214293674500000474.dcm");
+        //     // pd.lerDicom("/home/icaro/Downloads/dicom/teste/1.3.12.2.1107.5.1.7.136075.30000022111414210457000000274.dcm");
+        //     pd.exibirValoresDICOM();
+        // }catch(java.io.IOException | java.lang.NegativeArraySizeException | ClassNotFoundException ex){
+        //     ex.printStackTrace();
+        // }
+        // TimeExecution.fim();
+        // TimeExecution.exibirTempo();
+
+        /*\/ parse dicom; */
         TimeExecution.inicio();
-        ParseDicom pd = new ParseDicom();
-        try{
-            // pd.lerDicom("/home/icaro/Downloads/dicom/teste/WILLIANE_VITORIA_FONSECA_SILVA.CT.ABDOMEN_ABD_TRI_FASICO_MANUAL_(ADULT).0004.0001.2020.01.22.11.18.07.32196.464565879.IMA");
-            // pd.lerDicom("/home/icaro/Downloads/dicom/teste/1.2.392.200036.9107.307.31409.20230303.82202.1068445.dcm");
-            // pd.lerDicom("/home/icaro/Downloads/dicom/teste/1.2.392.200036.9107.307.31409.20230303.55013.1068434.dcm");
-            // pd.lerDicom("/home/icaro/Downloads/dicom/teste/1.3.12.2.1107.5.1.7.136075.30000023022214293674500000474.dcm");
-            pd.lerDicom("/home/icaro/Downloads/dicom/teste/1.3.12.2.1107.5.1.7.136075.30000022111414210457000000274.dcm");
-            pd.exibirValoresDICOM();
-        }catch(java.io.IOException | java.lang.NegativeArraySizeException | ClassNotFoundException ex){
-            ex.printStackTrace();
-        }
+        String dicom = "/home/icaro/Downloads/dicom/teste/dicom-teste.dcm";
+        // String dicom = "/home/icaro/Downloads/dicom/teste/1.3.12.2.1107.5.1.7.136075.30000022111414210457000000274.dcm";
+        AC_DicomReader dicomReader = new AC_DicomReader();
+		dicomReader.readDCMFile(dicom);
+		AC_DcmStructure dcmStructure = null;
+		try {
+			dcmStructure = dicomReader.getAttirbutes();
+            java.util.LinkedHashMap<Integer, String[]> attr = dcmStructure.getAttributes();
+            java.util.HashMap<Integer, String[]> partags = dicomReader.getBitTagToHexParTag();
+            attr.forEach((k, v) -> {
+                String[] hexTag = partags.get(k);
+                System.out.println( k + " :: tag(" + hexTag[0] + ", " + hexTag[1] + ") -> " + v[1] );
+            });
+            System.out.println( attr.size() );
+            System.out.println( partags.size() );
+		} catch (java.io.IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         TimeExecution.fim();
         TimeExecution.exibirTempo();
 
