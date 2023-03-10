@@ -15,6 +15,12 @@ import deepsea.utilities.ParseDicom;
 import deepsea.utilities.JSONUtils;
 import deepsea.utilities.LogFile;
 import deepsea.utilities.TimeExecution;
+import deepsea.utilities.Task;
+
+import deepsea.utilities.JDBCConnect;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /*\/ parse dicom; */
 import AC_DicomIO.AC_DcmStructure;
@@ -64,29 +70,50 @@ public class App {
         // TimeExecution.fim();
         // TimeExecution.exibirTempo();
 
-        /*\/ parse dicom; */
-        TimeExecution.inicio();
-        String dicom = "/home/icaro/Downloads/dicom/teste/dicom-teste.dcm";
-        // String dicom = "/home/icaro/Downloads/dicom/teste/1.3.12.2.1107.5.1.7.136075.30000022111414210457000000274.dcm";
-        AC_DicomReader dicomReader = new AC_DicomReader();
-		dicomReader.readDCMFile(dicom);
-		AC_DcmStructure dcmStructure = null;
-		try {
-			dcmStructure = dicomReader.getAttirbutes();
-            java.util.LinkedHashMap<Integer, String[]> attr = dcmStructure.getAttributes();
-            java.util.HashMap<Integer, String[]> partags = dicomReader.getBitTagToHexParTag();
-            attr.forEach((k, v) -> {
-                String[] hexTag = partags.get(k);
-                System.out.println( k + " :: tag(" + hexTag[0] + ", " + hexTag[1] + ") -> " + v[1] );
-            });
-            System.out.println( attr.size() );
-            System.out.println( partags.size() );
-		} catch (java.io.IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        TimeExecution.fim();
-        TimeExecution.exibirTempo();
+        // /*\/ parse dicom; */
+        // TimeExecution.inicio();
+        // String dicom = "/home/icaro/Downloads/dicom/teste/dicom-teste.dcm";
+        // // String dicom = "/home/icaro/Downloads/dicom/teste/1.3.12.2.1107.5.1.7.136075.30000022111414210457000000274.dcm";
+        // AC_DicomReader dicomReader = new AC_DicomReader();
+		// dicomReader.readDCMFile(dicom);
+		// AC_DcmStructure dcmStructure = null;
+		// try {
+		// 	dcmStructure = dicomReader.getAttirbutes();
+        //     java.util.LinkedHashMap<Integer, String[]> attr = dcmStructure.getAttributes();
+        //     java.util.HashMap<Integer, String[]> partags = dicomReader.getBitTagToHexParTag();
+        //     attr.forEach((k, v) -> {
+        //         String[] hexTag = partags.get(k);
+        //         System.out.println( k + " :: tag(" + hexTag[0] + ", " + hexTag[1] + ") -> " + v[1] );
+        //     });
+        //     System.out.println( attr.size() );
+        //     System.out.println( partags.size() );
+		// } catch (java.io.IOException e) {
+		// 	// TODO Auto-generated catch block
+		// 	e.printStackTrace();
+		// }
+        // TimeExecution.fim();
+        // TimeExecution.exibirTempo();
+
+        // System.out.println( (0x0010<<16 | 0x0020) );
+
+        // (0x0010 << 16 | 0x0020) // patientid;
+        // (0x0010 << 16 | 0x0010) // patient_name
+        // (0x0010 << 16 | 0x1010) // patient age
+        // (0x0010 << 16 | 0x0030) // patient birth date;
+        // (0x0010 << 16 | 0x0040) // patient sex
+        // (0x0008 << 16 | 0x0080) // institutio name;
+        // (0x0008 << 16 | 0x0020) // study date;
+
+
+        // Timer timer = new Timer();
+        // Task task = new Task();
+        // TimerTask timerTask = task;
+        // /*\/ execução repetida; */
+        // timer.schedule(timerTask, 0L, task.secondsToMilliseconds(3));
+
+
+        JDBCConnect con = new JDBCConnect();
+        con.criarTabelaSeNaoExistir();
 
     }
 }

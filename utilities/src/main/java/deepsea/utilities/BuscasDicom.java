@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.Vector;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -17,15 +18,22 @@ import java.io.File;
 import java.nio.file.Files;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.FileInputStream;
 import deepsea.utilities.LogFile;
 import deepsea.utilities.SftpClient;
 import deepsea.utilities.ZipUtility;
 import deepsea.utilities.ChecksumFile;
+import deepsea.utilities.JDBCConnect;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
+/*\/ parse dicom; */
+import AC_DicomIO.AC_DcmStructure;
+import AC_DicomIO.AC_DicomReader;
 
 /**
  * Buscas de arquivos DICOM;
@@ -211,24 +219,73 @@ public final class BuscasDicom extends SftpClient {
                 }
             }
             if(!error){
-                boolean errorZip = false;
-                final ZipUtility zip = new ZipUtility();
-                try{
-                    zip.zipFiles(dirBase.listFiles(), this.nameFileCompactZip + ".zip");
-                    /*\/ criar log de arquivos baixados do servidor;
-                    * OBS: analisar se o log deve ser criado após enviar os arquivos
-                    para algum servidor, ou anteriormente; */
-                    this.createLogFilesEnv();
-                }catch(java.io.IOException ex){
-                    errorZip = true;
-                    ex.printStackTrace();
-                }
-                if(!errorZip){
-                    /*\/ deletar pasta com arquivos dicoms baixados do servidor; */
-                    this.delDir(dirBase.toPath());
-                }
+                connectAndSendFiles(dirBase, caminhoDicomsDown);
+                /*\/ deletar pasta com arquivos dicoms baixados do servidor; */
+                this.delDir(dirBase.toPath());
             }
         }
+    }
+
+    private void connectAndSendFiles(File dirBase, List<String> caminhoDicomsDown) {
+        try{
+            if(dirBase.exists()){
+                File[] arqsBaixados = dirBase.listFiles();
+                final JDBCConnect banco = new JDBCConnect();
+                for(int i=0; i<arqsBaixados.length; i++){
+                    File file = arqsBaixados[i];
+                    InputStream fileStream = new FileInputStream(file);
+
+                    LinkedHashMap<Integer, String[]> atributesDicom = parseDicom(file);
+                    if(atributesDicom != null){
+                        List<String> values = new ArrayList<>();
+                        values.add( atributesDicom.get((0x0010 << 16 | 0x0020))[1] ); // patientid;
+                        values.add( atributesDicom.get((0x0010 << 16 | 0x0010))[1] ); // patient_name;
+                        values.add( atributesDicom.get((0x0010 << 16 | 0x1010))[1] ); // patient_age;
+                        values.add( atributesDicom.get((0x0010 << 16 | 0x0030))[1] ); // patient_birth_date;
+                        values.add( atributesDicom.get((0x0010 << 16 | 0x0040))[1] ); // patient_sex;
+                        values.add( atributesDicom.get((0x0008 << 16 | 0x0080))[1] ); // institutio_name;
+                        values.add( atributesDicom.get((0x0008 << 16 | 0x0020))[1] ); // study_date;
+                        values.add( caminhoDicomsDown.get(i) ); // caminho;
+
+                        if(banco.seConectado()){
+                            banco.inserir(values, fileStream);
+                        }
+                    }
+
+                    /*\/\/ fins de testes;;;; */
+                    // List<String> values = new ArrayList<>();
+                    // values.add("patientid;");
+                    // values.add("patient_name;");
+                    // values.add("patient_age;");
+                    // values.add("patient_birth_date;");
+                    // values.add("patient_sex;");
+                    // values.add("institutio_name;");
+                    // values.add("study_date;");
+                    // values.add(caminhoDicomsDown.get(i)); // caminho;
+                    // if(banco.seConectado()){
+                    //     banco.inserir(values, fileStream);
+                    // }
+                    /*\/\/ fins de testes;;;; */
+                }
+                banco.close();
+            }
+        }catch(java.io.IOException ex){ ex.printStackTrace(); }
+    }
+
+    private LinkedHashMap<Integer, String[]> parseDicom(File dicom) {
+        LinkedHashMap<Integer, String[]> attr = null;
+        AC_DicomReader dicomReader = new AC_DicomReader();
+        dicomReader.readDCMFile(dicom.getAbsolutePath());
+        AC_DcmStructure dcmStructure = null;
+        try {
+            dcmStructure = dicomReader.getAttirbutes();
+            attr = dcmStructure.getAttributes();
+            // HashMap<Integer, String[]> partags = dicomReader.getBitTagToHexParTag();
+        } catch (java.io.IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return attr;
     }
 
     /*\/ criar log de arquivos baixados do servidor; */
@@ -251,6 +308,17 @@ public final class BuscasDicom extends SftpClient {
         }
     }
 
+    private List<String> consultarArquivosBanco() {
+        List<String> arqsInexis = null;
+        final JDBCConnect con = new JDBCConnect();
+        if(con.seConectado()){
+            /*\/ arquivos inexistentes no banco; */
+            arqsInexis = this.filesDicom.stream().filter(file -> (con.consultarImagem(file) == 0)).collect(Collectors.toList());
+        }
+        con.close();
+        return arqsInexis;
+    }
+
     /* \/ navegar recursivamente em busca de arquivos dicoms,
     a partir de uma pasta base do servidor;
     efetuar downloads apenas de arquivos não registrados no log de arquivos enviados; 
@@ -259,18 +327,14 @@ public final class BuscasDicom extends SftpClient {
         this.freeWalk(remoteDir);
 
         if(this.filesDicom.size() > 0){
-            List<String> lEnvFiles = this.lerLogEnvFiles();
-            if(lEnvFiles.size() > 0){
-                /*\/ arquivos diferentes que não foram baixados do servidor; */
-                List<String> diffFilesEnv = this.diffTwoLists(this.filesDicom, lEnvFiles);
-                if(diffFilesEnv.size() > 0) this.downDicomsECompact(diffFilesEnv);
-            }else{
-                this.downDicomsECompact(this.filesDicom);
+            /*\/ consultar os arquivos no banco, antes de realizar o download dos mesmos; */
+            List<String> inexistsFiles = this.consultarArquivosBanco();
+            if(inexistsFiles.size() > 0){
+                this.downDicomsECompact(inexistsFiles);
             }
         }
-
         this.close();
-        this.sendZipToServer();
+        // this.sendZipToServer();
     }
 
     /*\/ enviar arquivos para o servidor; */
