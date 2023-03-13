@@ -59,6 +59,7 @@ public class App {
         // TimerTask timerTask = task;
         // /*\/ execução repetida; */
         // timer.schedule(timerTask, 0L, task.secondsToMilliseconds(3));
+        // timer.schedule(timerTask, 0L, task.minutesToMilliseconds(5));
 
 
         // JDBCConnect con = new JDBCConnect();

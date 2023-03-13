@@ -12,13 +12,12 @@ import java.util.TimerTask;
 public final class Task extends TimerTask {
 
     private final void executarBuscasDicom() {
-        // try{
-        //     final BuscasDicom busca = new BuscasDicom("187.17.3.12", "a_fhs", "#fhs2018#");
-        //     busca.getDiffLogAndServer("/home/a_fhs");
-        // }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
-        //     e.printStackTrace();
-        // }
-        System.out.println("Happy Birthday John Doe");
+        try{
+            final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
+            busca.getDiffLogAndServer("/home/storage-pacs");
+        }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
+            e.printStackTrace();
+        }
     }
 
     public void run() {

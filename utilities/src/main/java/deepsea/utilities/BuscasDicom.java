@@ -42,13 +42,13 @@ public final class BuscasDicom extends SftpClient {
     /*\/ profundidade de pastas da recursividade; */
     private final long maxProfund = 500;
     /*\/ quantidade máxima de arquivos a serem baixados do servidor; */
-    private final long maxDownloadFiles = 100;
+    private final long maxDownloadFiles = 400;
     /*\/ tipos de arquivos a procurar nas buscas em pasta e subpastas; */
     private final List<String> filesTypes = Arrays.asList(".dcm", ".ima");
     /*\/ pasta base onde a busca é iniciada; */
     private String pastaBase = null;
     /*\/ profundidade de subpastas em uma pasta encontrada na busca; */
-    private final int maxSubpastas = 10;//7;
+    private final int maxSubpastas = 10;
     /*\/ pastas que possuem profundo grau de subpastas encontradas na busca; */
     private final List<String> pastasEvit = new ArrayList<String>();
     private final List<String> pastasVisi = new ArrayList<String>();
@@ -201,7 +201,7 @@ public final class BuscasDicom extends SftpClient {
     private void connectAndSendFiles(File dirBase, List<String> caminhoDicomsDown) {
         try{
             if(dirBase.exists()){
-                System.out.println("Enviando imagens ao DB;");
+                System.out.println(">> Enviando imagens ao DB;");
                 File[] arqsBaixados = dirBase.listFiles();
                 final JDBCConnect banco = new JDBCConnect();
                 for(int i=0; i<arqsBaixados.length; i++){
@@ -264,19 +264,19 @@ public final class BuscasDicom extends SftpClient {
     efetuar downloads apenas de arquivos não registrados no log de arquivos enviados; 
     * */
     public void getDiffLogAndServer(String remoteDir) throws SftpException, JSchException {
-        System.out.println("Realizando buscas no servidor;");
+        System.out.println(">> Realizando buscas no servidor;");
         this.freeWalk(remoteDir);
 
         if(this.filesDicom.size() > 0){
+            System.out.println(">> " + this.filesDicom.size() + " imagens encontradas;");
             /*\/ consultar os arquivos no banco, antes de realizar o download dos mesmos; */
             List<String> inexistsFiles = this.consultarArquivosBanco();
             if(inexistsFiles.size() > 0){
-                System.out.println("Realizando download das imagens;");
+                System.out.println(">> Realizando download das imagens: " + inexistsFiles.size() + ";");
                 this.downDicomsECompact(inexistsFiles);
             }
         }
         this.close();
-        // this.sendZipToServer();
     }
 
     public void close() {
