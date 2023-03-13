@@ -46,24 +46,31 @@ public class App {
         //     e.printStackTrace();
         // }
 
+        TimeExecution.inicio();
         try{
             final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
             busca.getDiffLogAndServer("/home/storage-pacs");
         }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
             e.printStackTrace();
         }
+        TimeExecution.fim();
+        // TimeExecution.exibirTempo();
+
+        long tempoMedioMillis = TimeExecution.getTimeDurationMilli();
+        // System.out.println( "tempo levado: " + tempoMedioMillis );
 
 
         // Timer timer = new Timer();
         // Task task = new Task();
         // TimerTask timerTask = task;
         // /*\/ execução repetida; */
-        // timer.schedule(timerTask, 0L, task.secondsToMilliseconds(3));
-        // timer.schedule(timerTask, 0L, task.minutesToMilliseconds(5));
+        // timer.schedule(timerTask, 0L, tempoMedioMillis + task.secondsToMilliseconds(5));
+        // // timer.schedule(timerTask, 0L, task.minutesToMilliseconds(5));
 
 
         // JDBCConnect con = new JDBCConnect();
-        // con.criarTabelaSeNaoExistir();
+        // System.out.println(">> Tamanho DB: " + con.tamanhoBanco());
+        // System.out.println(">> Número registros: " + con.numeroRegistros());
 
     }
 }

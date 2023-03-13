@@ -164,6 +164,34 @@ public final class JDBCConnect {
         return count;
     }
 
+    public String tamanhoBanco(){
+        String count = null;
+        final String query = "SELECT pg_size_pretty(pg_database_size('"+ banco +"'));";
+        try{
+            ResultSet result = executeQuery(query);
+            while(result.next()){
+                count = result.getString("pg_size_pretty");
+            }
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    public long numeroRegistros(){
+        long count = 0;
+        final String query = "SELECT count(*) AS count FROM public.tb_images_dicom;";
+        try{
+            ResultSet result = executeQuery(query);
+            while(result.next()){
+                count = result.getLong("count");
+            }
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        return count;
+    }
+
     /*
     --
     -- Type: TABLE ; Name: tb_images_dicom; Owner: postgres

@@ -52,8 +52,10 @@ public final class BuscasDicom extends SftpClient {
     /*\/ pastas que possuem profundo grau de subpastas encontradas na busca; */
     private final List<String> pastasEvit = new ArrayList<String>();
     private final List<String> pastasVisi = new ArrayList<String>();
-    /*\/ nome do arquivo .zip para compactar os arquivos baixados do servidor; */
-    private final String nameFileCompactZip = "DownDicoms";
+    /*\/ pasta para baixar os arquivos dicoms encontrados no servidor; */
+    private final String pastaDownDicoms = "DownDicoms";
+    /*\/ log de dados do banco; */
+    private final String arquivoLogDadosDB = "log-dados-DB";
     /*\/ caminho completo dos arquivos dicoms encontrados no servidor; */
     private final List<String> filesDicom = new ArrayList<String>();
 
@@ -173,7 +175,7 @@ public final class BuscasDicom extends SftpClient {
     * */
     private void downDicomsECompact(final List<String> caminhoDicomsDown) {
         if(caminhoDicomsDown.size() > 0){
-            File dirBase = new File(this.nameFileCompactZip);
+            File dirBase = new File(this.pastaDownDicoms);
             if(!dirBase.exists()){
                 dirBase.mkdir();
             }
@@ -227,6 +229,7 @@ public final class BuscasDicom extends SftpClient {
                         }
                     }
                 }
+                System.out.println(">> Tamanho DB: " + banco.tamanhoBanco());
                 banco.close();
             }
         }catch(java.io.IOException ex){ ex.printStackTrace(); }
@@ -277,6 +280,27 @@ public final class BuscasDicom extends SftpClient {
             }
         }
         this.close();
+        this.createLogDadosDB();
+        System.out.println(">> Fim;");
+    }
+
+    /*\/ criar log de dados do banco; */
+    private void createLogDadosDB() {
+        final JDBCConnect banco = new JDBCConnect();
+        /*\/ date now(); */
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        String formattedDateTime = LocalDateTime.now().format(formatter);
+        File logCheck = new File(arquivoLogDadosDB);
+        boolean append = logCheck.exists();
+        try {
+            FileWriter myWriter = new FileWriter(arquivoLogDadosDB, /*append*/ false);
+            myWriter.write(">> Tamanho DB: " + banco.tamanhoBanco() + "|" + formattedDateTime + ";\n");
+            myWriter.write(">> Número registros: " + banco.numeroRegistros() + "|" + formattedDateTime + ";\n");
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        banco.close();
     }
 
     public void close() {

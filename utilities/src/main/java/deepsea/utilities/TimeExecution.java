@@ -44,4 +44,9 @@ public class TimeExecution {
         System.out.println( "###########################" );
     }
 
+    public static long getTimeDurationMilli() {
+      long duration_milli = (endTime_milli - startTime_milli);
+      return duration_milli;
+    }
+
 }
