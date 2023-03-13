@@ -209,7 +209,7 @@ public class SftpClient {
      * @throws SftpException If there is any problem with downloading file related permissions etc
      */
     public void downloadFile(String remotePath, String localPath) throws SftpException {
-        System.out.printf("Downloading [%s] to [%s]...%n", remotePath, localPath);
+        // System.out.printf("Downloading [%s] to [%s]...%n", remotePath, localPath);
         if (channel == null) {
             throw new IllegalArgumentException("Connection is not available");
         }

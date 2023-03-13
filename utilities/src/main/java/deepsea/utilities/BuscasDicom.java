@@ -40,9 +40,11 @@ import AC_DicomIO.AC_DicomReader;
  */
 public final class BuscasDicom extends SftpClient {
     /*\/ profundidade de pastas da recursividade; */
-    private final long maxProfund = 50;//500;
+    private final long maxProfund = 500;
+    /*\/ quantidade máxima de arquivos a serem baixados do servidor; */
+    private final long maxDownloadFiles = 100;
     /*\/ tipos de arquivos a procurar nas buscas em pasta e subpastas; */
-    private final List<String> filesTypes = Arrays.asList(".dcm", ".ima", ".css"); // << ".css" para fins de testes;
+    private final List<String> filesTypes = Arrays.asList(".dcm", ".ima");
     /*\/ pasta base onde a busca é iniciada; */
     private String pastaBase = null;
     /*\/ profundidade de subpastas em uma pasta encontrada na busca; */
@@ -50,8 +52,6 @@ public final class BuscasDicom extends SftpClient {
     /*\/ pastas que possuem profundo grau de subpastas encontradas na busca; */
     private final List<String> pastasEvit = new ArrayList<String>();
     private final List<String> pastasVisi = new ArrayList<String>();
-    /*\/ arquvo de log de arquivos baixados do servidor; */
-    private final String fileLogChecksum = "files-env.txt";
     /*\/ nome do arquivo .zip para compactar os arquivos baixados do servidor; */
     private final String nameFileCompactZip = "DownDicoms";
     /*\/ caminho completo dos arquivos dicoms encontrados no servidor; */
@@ -118,7 +118,7 @@ public final class BuscasDicom extends SftpClient {
         if (getChannel() == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
-        System.out.printf("Listing [%s]...%n", remoteDir);
+        // System.out.printf("Listing [%s]...%n", remoteDir);
         if(this.pastaBase == null){
             this.pastaBase = remoteDir;
         }
@@ -154,34 +154,6 @@ public final class BuscasDicom extends SftpClient {
         }
     }
 
-    private List<String> lerLogEnvFiles(){
-        final List<String> lcheks = new ArrayList<>();
-        // pass the path to the file as a parameter
-        File file = new File(this.fileLogChecksum);
-        if(file.exists()){
-            try{
-                Scanner sc = new Scanner(file);
-                while (sc.hasNextLine()){
-                    String linha = sc.nextLine();
-                    String ped[] = linha.split("\\|");
-                    if(ped.length > 0){
-                        lcheks.add(ped[0]);
-                        // System.out.println(ped[0] + " -> " + ped[1] + " -> " + ped[2]);
-                    }
-                }
-            }catch(java.io.FileNotFoundException e){}
-        }
-        return lcheks;
-    }
-
-    /*\/ auxiliar no retorno da diferença de duas listas de arvores de diretórios; */
-    private <T> List<T> diffTwoLists(List<T>listOne, List<T>listTwo) {
-        List<T> differences = listOne.stream()
-            .filter(element -> !listTwo.contains(element))
-            .collect(Collectors.toList());
-        return differences;
-    }
-
     private void delDir(Path dir) {
         try{
             Files.walk(dir) // Traverse the file tree in depth-first order
@@ -205,13 +177,13 @@ public final class BuscasDicom extends SftpClient {
             if(!dirBase.exists()){
                 dirBase.mkdir();
             }
-            int con = 0;//<< fins de testes;
+            int con = 0;
             boolean error = false;
             for(String pathFile : caminhoDicomsDown){
                 try{
-                    if(con<5){//<< fins de testes;
+                    if(con < maxDownloadFiles){
                         downloadFile(pathFile, dirBase.getAbsolutePath());
-                        con++;//<< fins de testes;
+                        con++;
                     }
                 }catch(SftpException e){
                     error = true;
@@ -229,6 +201,7 @@ public final class BuscasDicom extends SftpClient {
     private void connectAndSendFiles(File dirBase, List<String> caminhoDicomsDown) {
         try{
             if(dirBase.exists()){
+                System.out.println("Enviando imagens ao DB;");
                 File[] arqsBaixados = dirBase.listFiles();
                 final JDBCConnect banco = new JDBCConnect();
                 for(int i=0; i<arqsBaixados.length; i++){
@@ -253,21 +226,6 @@ public final class BuscasDicom extends SftpClient {
                             banco.inserir(values, fileStream);
                         }
                     }
-
-                    /*\/\/ fins de testes;;;; */
-                    // List<String> values = new ArrayList<>();
-                    // values.add("patientid;");
-                    // values.add("patient_name;");
-                    // values.add("patient_age;");
-                    // values.add("patient_birth_date;");
-                    // values.add("patient_sex;");
-                    // values.add("institutio_name;");
-                    // values.add("study_date;");
-                    // values.add(caminhoDicomsDown.get(i)); // caminho;
-                    // if(banco.seConectado()){
-                    //     banco.inserir(values, fileStream);
-                    // }
-                    /*\/\/ fins de testes;;;; */
                 }
                 banco.close();
             }
@@ -290,26 +248,6 @@ public final class BuscasDicom extends SftpClient {
         return attr;
     }
 
-    /*\/ criar log de arquivos baixados do servidor; */
-    private void createLogFilesEnv() {
-        if(this.filesDicom.size() > 0){
-            /*\/ date now(); */
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-            String formattedDateTime = LocalDateTime.now().format(formatter);
-            File logCheck = new File(this.fileLogChecksum);
-            boolean append = logCheck.exists();
-            try {
-                FileWriter myWriter = new FileWriter(this.fileLogChecksum, append);
-                for(String file : this.filesDicom){
-                    myWriter.write(file + "|" + formattedDateTime + ";\n");
-                }
-                myWriter.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     private List<String> consultarArquivosBanco() {
         List<String> arqsInexis = null;
         final JDBCConnect con = new JDBCConnect();
@@ -326,29 +264,19 @@ public final class BuscasDicom extends SftpClient {
     efetuar downloads apenas de arquivos não registrados no log de arquivos enviados; 
     * */
     public void getDiffLogAndServer(String remoteDir) throws SftpException, JSchException {
+        System.out.println("Realizando buscas no servidor;");
         this.freeWalk(remoteDir);
 
         if(this.filesDicom.size() > 0){
             /*\/ consultar os arquivos no banco, antes de realizar o download dos mesmos; */
             List<String> inexistsFiles = this.consultarArquivosBanco();
             if(inexistsFiles.size() > 0){
+                System.out.println("Realizando download das imagens;");
                 this.downDicomsECompact(inexistsFiles);
             }
         }
         this.close();
         // this.sendZipToServer();
-    }
-
-    /*\/ enviar arquivos para o servidor; */
-    private void sendZipToServer() {
-        File fileZip = new File(this.nameFileCompactZip + ".zip");
-        if(fileZip.exists()){
-            /*... enviar servidor; */
-
-
-            /* deletar arquivo zip após enviar ao servidor; */
-            // fileZip.delete();
-        }
     }
 
     public void close() {
