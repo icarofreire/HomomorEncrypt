@@ -54,7 +54,7 @@ public class App {
             e.printStackTrace();
         }
         TimeExecution.fim();
-        // TimeExecution.exibirTempo();
+        TimeExecution.exibirTempo();
 
         long tempoMedioMillis = TimeExecution.getTimeDurationMilli();
         // System.out.println( "tempo levado: " + tempoMedioMillis );
@@ -69,7 +69,7 @@ public class App {
 
 
         // JDBCConnect con = new JDBCConnect();
-        // System.out.println(">> Tamanho DB: " + con.tamanhoBanco());
+        // System.out.println( con.seConectado() );
         // System.out.println(">> Número registros: " + con.numeroRegistros());
 
     }
