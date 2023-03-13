@@ -46,6 +46,13 @@ public class App {
         //     e.printStackTrace();
         // }
 
+        try{
+            final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
+            busca.getDiffLogAndServer("/home/storage-pacs");
+        }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
+            e.printStackTrace();
+        }
+
         // ZipUtility zip = new ZipUtility();
         // try{
         //     // zip.zipDirectory("/home/icaro/Downloads/dicom/teste", "tudo");
@@ -112,8 +119,8 @@ public class App {
         // timer.schedule(timerTask, 0L, task.secondsToMilliseconds(3));
 
 
-        JDBCConnect con = new JDBCConnect();
-        con.criarTabelaSeNaoExistir();
+        // JDBCConnect con = new JDBCConnect();
+        // con.criarTabelaSeNaoExistir();
 
     }
 }

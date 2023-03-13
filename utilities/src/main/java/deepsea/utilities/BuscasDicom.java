@@ -238,14 +238,16 @@ public final class BuscasDicom extends SftpClient {
                     LinkedHashMap<Integer, String[]> atributesDicom = parseDicom(file);
                     if(atributesDicom != null){
                         List<String> values = new ArrayList<>();
-                        values.add( atributesDicom.get((0x0010 << 16 | 0x0020))[1] ); // patientid;
-                        values.add( atributesDicom.get((0x0010 << 16 | 0x0010))[1] ); // patient_name;
-                        values.add( atributesDicom.get((0x0010 << 16 | 0x1010))[1] ); // patient_age;
-                        values.add( atributesDicom.get((0x0010 << 16 | 0x0030))[1] ); // patient_birth_date;
-                        values.add( atributesDicom.get((0x0010 << 16 | 0x0040))[1] ); // patient_sex;
-                        values.add( atributesDicom.get((0x0008 << 16 | 0x0080))[1] ); // institutio_name;
-                        values.add( atributesDicom.get((0x0008 << 16 | 0x0020))[1] ); // study_date;
-                        values.add( caminhoDicomsDown.get(i) ); // caminho;
+                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0020))) ? (atributesDicom.get((0x0010 << 16 | 0x0020))[1]) : (null) ); // patient_id;
+                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0010))) ? (atributesDicom.get((0x0010 << 16 | 0x0010))[1]) : (null) ); // patient_name;
+                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x1010))) ? (atributesDicom.get((0x0010 << 16 | 0x1010))[1]) : (null) ); // patient_age;
+                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0030))) ? (atributesDicom.get((0x0010 << 16 | 0x0030))[1]) : (null) ); // patient_birth_date;
+                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0040))) ? (atributesDicom.get((0x0010 << 16 | 0x0040))[1]) : (null) ); // patient_sex;
+                        values.add( (atributesDicom.containsKey((0x0008 << 16 | 0x0080))) ? (atributesDicom.get((0x0008 << 16 | 0x0080))[1]) : (null) ); // institutio_name;
+                        values.add( (atributesDicom.containsKey((0x0008 << 16 | 0x0020))) ? (atributesDicom.get((0x0008 << 16 | 0x0020))[1]) : (null) ); // study_date;
+                        values.add( (atributesDicom.containsKey((0x0020 << 16 | 0x0010))) ? (atributesDicom.get((0x0020 << 16 | 0x0010))[1]) : (null) ); // study_id;
+                        values.add( (atributesDicom.containsKey((0x0020 << 16 | 0x0011))) ? (atributesDicom.get((0x0020 << 16 | 0x0011))[1]) : (null) ); // series_number;
+                        values.add( caminhoDicomsDown.get(i) ); // path;
 
                         if(banco.seConectado()){
                             banco.inserir(values, fileStream);

@@ -146,7 +146,7 @@ public class AC_DicomReader {
 		{
 			m_Compressed = true;
 			// logger.error("Compressed Dicom");
-			JOptionPane.showMessageDialog(null, "Compressed DCM�� ���� �������� �ʽ��ϴ�.","File Reader Error",JOptionPane.ERROR_MESSAGE);
+			// JOptionPane.showMessageDialog(null, "Compressed DCM�� ���� �������� �ʽ��ϴ�.","File Reader Error",JOptionPane.ERROR_MESSAGE);
 		}
 
 	}

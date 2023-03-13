@@ -20,24 +20,6 @@ import java.io.InputStream;
 import org.postgresql.Driver;
 
 
-/*
---
--- Type: TABLE ; Name: tb_images_dicom; Owner: postgres
---
-CREATE TABLE public.tb_images_dicom (
-    id bigint NOT NULL,
-    dicom bytea NOT NULL,
-    patient_id character varying(255) NOT NULL,
-    patient_name character varying(255) NOT NULL,
-    patient_age character varying(255) NOT NULL,
-    patient_birth_date character varying(255) NOT NULL,
-    patient_sex character varying(255) NOT NULL,
-    institution_name character varying(255) NOT NULL,
-    study_date character varying(255) NOT NULL,
-    absolute_path_file character varying(255) NOT NULL
-);
-*/
-
 /**
  * 
  */
@@ -62,14 +44,8 @@ public final class JDBCConnect {
             stmt = connection.createStatement();
         } catch (Exception e) {
             e.printStackTrace();
-        } /*finally {
-            try {
-                stmt.close();
-                connection.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }*/
+        }
+        criarTabelaSeNaoExistir();
     }
 
     public ResultSet executeQuery(String query){
@@ -145,8 +121,10 @@ public final class JDBCConnect {
         "patient_sex," +
         "institution_name," +
         "study_date," +
-        "absolute_path_file)" +
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        "study_id," +
+        "series_number," +
+        "absolute_path_file" +
+        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
         try{
             long ultimoId = ultimoIdTabela();
             PreparedStatement ps = connection.prepareStatement(query);
@@ -186,6 +164,25 @@ public final class JDBCConnect {
         return count;
     }
 
+    /*
+    --
+    -- Type: TABLE ; Name: tb_images_dicom; Owner: postgres
+    --
+    CREATE TABLE public.tb_images_dicom (
+        id bigint NOT NULL,
+        dicom bytea NOT NULL,
+        patient_id character varying(255) NOT NULL,
+        patient_name character varying(255),
+        patient_age character varying(255),
+        patient_birth_date character varying(255),
+        patient_sex character varying(255),
+        institution_name character varying(255),
+        study_date character varying(255),
+        study_id character varying(255),
+        series_number character varying(255),
+        absolute_path_file character varying(255) NOT NULL
+    );
+    */
     public String criarTabela(){
         String count = null;
         final String query =
@@ -193,12 +190,14 @@ public final class JDBCConnect {
         "id bigint NOT NULL, \n" +
         "dicom bytea NOT NULL, \n" +
         "patient_id character varying(255) NOT NULL, \n" +
-        "patient_name character varying(255) NOT NULL, \n" +
-        "patient_age character varying(255) NOT NULL, \n" +
-        "patient_birth_date character varying(255) NOT NULL, \n" +
-        "patient_sex character varying(255) NOT NULL, \n" +
-        "institution_name character varying(255) NOT NULL, \n" +
-        "study_date character varying(255) NOT NULL, \n" +
+        "patient_name character varying(255), \n" +
+        "patient_age character varying(255), \n" +
+        "patient_birth_date character varying(255), \n" +
+        "patient_sex character varying(255), \n" +
+        "institution_name character varying(255), \n" +
+        "study_date character varying(255), \n" +
+        "study_id character varying(255), \n" +
+        "series_number character varying(255), \n" +
         "absolute_path_file character varying(255) NOT NULL \n" +
         ");";
         try{

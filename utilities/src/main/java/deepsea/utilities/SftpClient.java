@@ -17,7 +17,7 @@ import java.io.IOException;
 /**
  * A simple SFTP client using JSCH http://www.jcraft.com/jsch/
  */
-public /*final*/ class SftpClient {
+public class SftpClient {
     private final String      host;
     private final int         port;
     private final String      username;
@@ -122,7 +122,7 @@ public /*final*/ class SftpClient {
         if (channel == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
-        System.out.printf("Listing [%s]...%n", remoteDir);
+        // System.out.printf("Listing [%s]...%n", remoteDir);
         channel.cd(remoteDir);
         Vector<ChannelSftp.LsEntry> files = channel.ls(".");
         for (ChannelSftp.LsEntry file : files) {
@@ -133,7 +133,7 @@ public /*final*/ class SftpClient {
             if (attrs.isDir()) {
                 size = "PRE";
             }
-            System.out.printf("[%s] %s(%s)%n", permissions, name, size);
+            // System.out.printf("[%s] %s(%s)%n", permissions, name, size);
         }
     }
 
@@ -159,7 +159,7 @@ public /*final*/ class SftpClient {
         if (channel == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
-        System.out.printf("Listing [%s]...%n", remoteDir);
+        // System.out.printf("Listing [%s]...%n", remoteDir);
         channel.cd(remoteDir);
         Vector<ChannelSftp.LsEntry> files = vetorConteudos(remoteDir);
         if(files != null && !files.isEmpty()){
@@ -179,7 +179,7 @@ public /*final*/ class SftpClient {
                     if(sub != null){
                         recursiveListFiles(subPasta);
                     }
-                    System.out.printf("[%s] %s(%s)%n", permissions, name, size);
+                    // System.out.printf("[%s] %s(%s)%n", permissions, name, size);
                 }
             }
         }
@@ -194,7 +194,7 @@ public /*final*/ class SftpClient {
      * @throws SftpException If there is any problem with uploading file permissions etc
      */
     public void uploadFile(String localPath, String remotePath) throws JSchException, SftpException {
-        System.out.printf("Uploading [%s] to [%s]...%n", localPath, remotePath);
+        // System.out.printf("Uploading [%s] to [%s]...%n", localPath, remotePath);
         if (channel == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
@@ -223,7 +223,7 @@ public /*final*/ class SftpClient {
      * @throws SftpException If there is any problem with deleting file related to permissions etc
      */
     public void delete(String remoteFile) throws SftpException {
-        System.out.printf("Deleting [%s]...%n", remoteFile);
+        // System.out.printf("Deleting [%s]...%n", remoteFile);
         if (channel == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
