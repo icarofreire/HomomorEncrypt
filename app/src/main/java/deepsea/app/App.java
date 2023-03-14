@@ -5,23 +5,10 @@ package deepsea.app;
 
 import deepsea.list.LinkedList;
 
-import static deepsea.utilities.StringUtils.join;
-import static deepsea.utilities.StringUtils.split;
-import static deepsea.app.MessageUtils.getMessage;
-import deepsea.utilities.SftpClient;
 import deepsea.utilities.BuscasDicom;
-import deepsea.utilities.ZipUtility;
-import deepsea.utilities.ParseDicom;
-import deepsea.utilities.JSONUtils;
-import deepsea.utilities.LogFile;
 import deepsea.utilities.TimeExecution;
-import deepsea.utilities.Task;
 import deepsea.utilities.Scheduler;
-
 import deepsea.utilities.JDBCConnect;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 /*\/ parse dicom; */
 import AC_DicomIO.AC_DcmStructure;
@@ -29,44 +16,6 @@ import AC_DicomIO.AC_DicomReader;
 
 public class App {
     public static void main(String[] args) {
-
-        // try{
-        //     SftpClient sftp = new SftpClient("187.17.3.12", "a_fhs", "#fhs2018#");
-        //     sftp.freeWalk("/home/a_fhs");
-        //     // sftp.close();
-        //     // sftp.gerarLogTreeFiles();
-        //     // sftp.ler();
-        // }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
-        //     e.printStackTrace();
-        // }
-
-        // try{
-        //     final BuscasDicom busca = new BuscasDicom("187.17.3.12", "a_fhs", "#fhs2018#");
-        //     busca.getDiffLogAndServer("/home/a_fhs");
-        // }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
-        //     e.printStackTrace();
-        // }
-
-        // TimeExecution.inicio();
-        // try{
-        //     final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
-        //     busca.getDiffLogAndServer("/home/storage-pacs");
-        // }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
-        //     e.printStackTrace();
-        // }
-        // TimeExecution.fim();
-        // TimeExecution.exibirTempo();
-
-        // long tempoMedioMillis = TimeExecution.getTimeDurationMilli();
-        // System.out.println( "tempo levado: " + tempoMedioMillis );
-
-
-        // Timer timer = new Timer();
-        // Task task = new Task();
-        // TimerTask timerTask = task;
-        // /*\/ execução repetida; */
-        // timer.schedule(timerTask, 0L, tempoMedioMillis + task.secondsToMilliseconds(5));
-        // // timer.schedule(timerTask, 0L, task.minutesToMilliseconds(5));
 
         Scheduler sche = new Scheduler();
         sche.ini();
