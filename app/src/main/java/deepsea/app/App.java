@@ -16,6 +16,7 @@ import deepsea.utilities.JSONUtils;
 import deepsea.utilities.LogFile;
 import deepsea.utilities.TimeExecution;
 import deepsea.utilities.Task;
+import deepsea.utilities.Scheduler;
 
 import deepsea.utilities.JDBCConnect;
 
@@ -46,17 +47,17 @@ public class App {
         //     e.printStackTrace();
         // }
 
-        TimeExecution.inicio();
-        try{
-            final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
-            busca.getDiffLogAndServer("/home/storage-pacs");
-        }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
-            e.printStackTrace();
-        }
-        TimeExecution.fim();
-        TimeExecution.exibirTempo();
+        // TimeExecution.inicio();
+        // try{
+        //     final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
+        //     busca.getDiffLogAndServer("/home/storage-pacs");
+        // }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
+        //     e.printStackTrace();
+        // }
+        // TimeExecution.fim();
+        // TimeExecution.exibirTempo();
 
-        long tempoMedioMillis = TimeExecution.getTimeDurationMilli();
+        // long tempoMedioMillis = TimeExecution.getTimeDurationMilli();
         // System.out.println( "tempo levado: " + tempoMedioMillis );
 
 
@@ -67,10 +68,15 @@ public class App {
         // timer.schedule(timerTask, 0L, tempoMedioMillis + task.secondsToMilliseconds(5));
         // // timer.schedule(timerTask, 0L, task.minutesToMilliseconds(5));
 
+        Scheduler sche = new Scheduler();
+        sche.ini();
 
-        // JDBCConnect con = new JDBCConnect();
-        // System.out.println( con.seConectado() );
-        // System.out.println(">> Número registros: " + con.numeroRegistros());
+        // JDBCConnect banco = new JDBCConnect();
+        // System.out.println( banco.seConectado() );
+        // System.out.println(">> Tamanho DB: " + banco.tamanhoBanco());
+        // System.out.println(">> Número registros: " + banco.numeroRegistros());
+        // /*\/ realizar teste de integridade de imagem dicom salva no banco; */
+        // banco.testeBaixarImagemDICOM();
 
     }
 }

@@ -19,6 +19,15 @@ import java.sql.PreparedStatement;
 import java.io.InputStream;
 import org.postgresql.Driver;
 
+/*\/ procedimentos para criar testes de autenticidade de imagens dicoms;  */
+import java.io.OutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ByteArrayInputStream;
+import java.util.LinkedHashMap;
+/*\/ parse dicom; */
+import AC_DicomIO.AC_DcmStructure;
+import AC_DicomIO.AC_DicomReader;
 
 /**
  * 
@@ -245,6 +254,49 @@ public final class JDBCConnect {
                 criarTabela();
             }
         }
+    }
+
+    public byte[] selectImage(long id){
+        byte[] count = null;
+        final String query = "SELECT t.dicom FROM public.tb_images_dicom t where t.id = " + id + ";";
+        try{
+            ResultSet result = executeQuery(query);
+            while(result.next()){
+                count = result.getBytes("dicom");
+            }
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    public void testeBaixarImagemDICOM(){
+        try{
+            File targetFile = new File("teste-down.dcm");
+            OutputStream outStream = new FileOutputStream(targetFile);
+            InputStream initialStream = new ByteArrayInputStream(selectImage(300));
+            initialStream.transferTo(outStream);
+            parseDicom(targetFile);
+            targetFile.delete();
+        }catch(IOException e){}
+    }
+
+    private LinkedHashMap<Integer, String[]> parseDicom(File dicom) {
+        LinkedHashMap<Integer, String[]> attr = null;
+        AC_DicomReader dicomReader = new AC_DicomReader();
+        dicomReader.readDCMFile(dicom.getAbsolutePath());
+        AC_DcmStructure dcmStructure = null;
+        try {
+            dcmStructure = dicomReader.getAttirbutes();
+            attr = dcmStructure.getAttributes();
+            System.out.println( ">> TAM: " + attr.size() );
+            System.out.println( ">> TESTE DICOM: " + (attr.size() > 0) );
+            // HashMap<Integer, String[]> partags = dicomReader.getBitTagToHexParTag();
+        } catch (java.io.IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return attr;
     }
 
 }

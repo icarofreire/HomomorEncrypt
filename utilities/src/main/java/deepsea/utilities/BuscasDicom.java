@@ -58,6 +58,8 @@ public final class BuscasDicom extends SftpClient {
     private final String arquivoLogDadosDB = "log-dados-DB";
     /*\/ caminho completo dos arquivos dicoms encontrados no servidor; */
     private final List<String> filesDicom = new ArrayList<String>();
+    /*\/ info processo de realização do procedimento; */
+    private final boolean verbose = true;
 
     public BuscasDicom(String host, String username, String password) throws JSchException {
         super(host, username, password);
@@ -203,7 +205,7 @@ public final class BuscasDicom extends SftpClient {
     private void connectAndSendFiles(File dirBase, List<String> caminhoDicomsDown) {
         try{
             if(dirBase.exists()){
-                System.out.println(">> Enviando imagens ao DB;");
+                if(verbose) System.out.println(">> Enviando imagens ao DB;");
                 File[] arqsBaixados = dirBase.listFiles();
                 final JDBCConnect banco = new JDBCConnect();
                 for(int i=0; i<arqsBaixados.length; i++){
@@ -229,7 +231,7 @@ public final class BuscasDicom extends SftpClient {
                         }
                     }
                 }
-                System.out.println(">> Tamanho DB: " + banco.tamanhoBanco());
+                if(verbose) System.out.println(">> Tamanho DB: " + banco.tamanhoBanco());
                 banco.close();
             }
         }catch(java.io.IOException ex){ ex.printStackTrace(); }
@@ -267,21 +269,21 @@ public final class BuscasDicom extends SftpClient {
     efetuar downloads apenas de arquivos não registrados no log de arquivos enviados; 
     * */
     public void getDiffLogAndServer(String remoteDir) throws SftpException, JSchException {
-        System.out.println(">> Realizando buscas no servidor;");
+        if(verbose) System.out.println(">> Realizando buscas no servidor;");
         this.freeWalk(remoteDir);
 
         if(this.filesDicom.size() > 0){
-            System.out.println(">> " + this.filesDicom.size() + " imagens encontradas;");
+            if(verbose) System.out.println(">> " + this.filesDicom.size() + " imagens encontradas;");
             /*\/ consultar os arquivos no banco, antes de realizar o download dos mesmos; */
             List<String> inexistsFiles = this.consultarArquivosBanco();
             if(inexistsFiles.size() > 0){
-                System.out.println(">> Realizando download das imagens: " + inexistsFiles.size() + ";");
+                if(verbose) System.out.println(">> Realizando download das imagens: " + inexistsFiles.size() + ";");
                 this.downDicomsECompact(inexistsFiles);
             }
         }
         this.close();
         this.createLogDadosDB();
-        System.out.println(">> Fim;");
+        if(verbose) System.out.println(">> Fim;");
     }
 
     /*\/ criar log de dados do banco; */
