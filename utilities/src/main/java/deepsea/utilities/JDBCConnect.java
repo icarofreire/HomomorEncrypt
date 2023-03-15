@@ -29,6 +29,8 @@ import java.util.LinkedHashMap;
 import AC_DicomIO.AC_DcmStructure;
 import AC_DicomIO.AC_DicomReader;
 
+import deepsea.utilities.FileOperationsMinio;
+
 /**
  * 
  */
@@ -270,6 +272,24 @@ public final class JDBCConnect {
         return count;
     }
 
+    public String selectNameImage(long id){
+        String count = null;
+        final String query = "SELECT t.absolute_path_file FROM public.tb_images_dicom t where t.id = " + id + ";";
+        try{
+            ResultSet result = executeQuery(query);
+            while(result.next()){
+                count = result.getString("absolute_path_file");
+            }
+            if(count != null){
+                String[] parts = count.split("\\/");
+                count = parts[parts.length-1];
+            }
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        return count;
+    }
+
     public void testeBaixarImagemDICOM(){
         try{
             File targetFile = new File("teste-down.dcm");
@@ -297,6 +317,36 @@ public final class JDBCConnect {
             e.printStackTrace();
         }
         return attr;
+    }
+
+    public void transferImagesToMinio(){
+        try{
+            FileOperationsMinio minio = new FileOperationsMinio();
+            long totalObjects = minio.totalObjects();
+            long totalRegistrosBanco = numeroRegistros();
+            if(totalRegistrosBanco > totalObjects){
+                for(long id = totalObjects; id <= totalRegistrosBanco; id++){
+                    long idImage = id;
+                    String nomeArquivoImagem = selectNameImage(idImage);
+                    if(nomeArquivoImagem != null){
+                        File file = new File(nomeArquivoImagem);
+                        OutputStream outStream = new FileOutputStream(file);
+                        InputStream initialStream = new ByteArrayInputStream(selectImage(idImage));
+                        initialStream.transferTo(outStream);
+
+                        if(!minio.ifObjectExists(file.getName())){
+                            if(minio.uploadObject(file.getName(), file.getAbsolutePath())){
+                                // System.out.println( ">> UP Ok;" );
+                            }
+                        }else{
+                            // System.out.println( file.getName() + " já existe no minio;" );
+                        }
+                        file.delete();
+                    }
+                }
+            }
+            // System.out.println( ">> MinIO Total: " + minio.totalObjects() );
+        }catch(IOException e){}
     }
 
 }

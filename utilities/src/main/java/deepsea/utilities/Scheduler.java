@@ -4,6 +4,7 @@
 package deepsea.utilities;
 
 import deepsea.utilities.BuscasDicom;
+import deepsea.utilities.JDBCConnect;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -32,13 +33,20 @@ public final class Scheduler {
         }
     }
 
-    private void iniciarBuscas() {
+    /*\/ imagens que são registradas no banco de dados,
+    também são transferidas ao servidor do MinIO; */
+    private final void iniciarBuscas() {
         try{
             final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
             busca.getDiffLogAndServer("/home/storage-pacs");
         }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
             e.printStackTrace();
         }
+
+        final JDBCConnect banco = new JDBCConnect();
+        /*\/ transferir imagens para o servidor MinIO; */
+        banco.transferImagesToMinio();
+        banco.close();
     }
 
     public void ini() {
@@ -53,7 +61,7 @@ public final class Scheduler {
         TimerTask timerTask = task;
         /*\/ execução repetida; */
         timer.schedule(timerTask, 0L, tempoMedioMillis + task.secondsToMilliseconds(5));
-        // timer.schedule(timerTask, 0L, task.minutesToMilliseconds(10L));
+        // timer.schedule(timerTask, 0L, tempoMedioMillis + task.minutesToMilliseconds(10L));
     }
 
 }

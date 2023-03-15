@@ -273,11 +273,10 @@ public final class BuscasDicom extends SftpClient {
         this.freeWalk(remoteDir);
 
         if(this.filesDicom.size() > 0){
-            if(verbose) System.out.println(">> " + this.filesDicom.size() + " imagens encontradas;");
             /*\/ consultar os arquivos no banco, antes de realizar o download dos mesmos; */
             List<String> inexistsFiles = this.consultarArquivosBanco();
             if(inexistsFiles.size() > 0){
-                if(verbose) System.out.println(">> Realizando download das imagens: " + inexistsFiles.size() + ";");
+                if(verbose) System.out.println(">> Download + " + inexistsFiles.size() + " imagens;");
                 this.downDicomsECompact(inexistsFiles);
             }
         }
