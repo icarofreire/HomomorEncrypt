@@ -365,6 +365,7 @@ public final class JDBCConnect {
                 if(totalRegistrosBanco > totalObjects){
                     for(long id = totalObjects; id <= totalRegistrosBanco; id++)
                     {
+                        long idImage = id;
                         String nomeArquivoImagem = selectNameImage(idImage);
                         if(nomeArquivoImagem != null){
                             File file = new File(nomeArquivoImagem);
