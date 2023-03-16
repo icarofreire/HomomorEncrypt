@@ -281,7 +281,7 @@ public final class BuscasDicom extends SftpClient {
             }
         }
         this.close();
-        this.createLogDadosDB();
+        // this.createLogDadosDB();
         if(verbose) System.out.println(">> Fim;");
     }
 

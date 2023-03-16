@@ -18,24 +18,20 @@ import AC_DicomIO.AC_DicomReader;
 public class App {
     public static void main(String[] args) {
 
-        // Scheduler sche = new Scheduler();
-        // sche.ini();
+        Scheduler sche = new Scheduler();
+        sche.ini();
 
-        JDBCConnect banco = new JDBCConnect();
-        banco.transferImagesToMinio();
-        banco.close();
-        // System.out.println( banco.seConectado() );
+        // JDBCConnect banco = new JDBCConnect();
+        // banco.transferImagesCompactToMinio();
         // System.out.println(">> Tamanho DB: " + banco.tamanhoBanco());
         // System.out.println(">> Número registros: " + banco.numeroRegistros());
-        // /*\/ realizar teste de integridade de imagem dicom salva no banco; */
-        // banco.testeBaixarImagemDICOM();
+        // banco.close();
 
-        // FileOperationsMinio minio = new FileOperationsMinio();
-        // minio.listObjects();
-        // try{
-        //     minio.createMinioClient();
-        // }catch(java.io.IOException | java.security.NoSuchAlgorithmException | java.security.InvalidKeyException e){
-        //     e.printStackTrace();
+        // FileOperationsMinio minio = new FileOperationsMinio("zip-dicoms");
+        // if(!minio.getErrorConnection()){
+        //     System.out.println("T: " + minio.totalObjects());
+        //     minio.listObjects();
+        //     // minio.downloadObjectAndUnzipFileToInputStream("1.2.392.200036.9107.307.31409.20230222.225031.1066960.zip", "/home/icaro/Documentos/DeepSea");
         // }
 
     }

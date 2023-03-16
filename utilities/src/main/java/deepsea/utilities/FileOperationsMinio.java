@@ -3,6 +3,9 @@
  */
 package deepsea.utilities;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.FileInputStream;
 import io.minio.StatObjectArgs;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
@@ -17,6 +20,7 @@ import io.minio.errors.MinioException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import deepsea.utilities.ZipUtility;
 
 /**
  * classe para realizar procedimentos de arquivos(Objetos) no servidor do MinIO.
@@ -24,10 +28,11 @@ import java.security.NoSuchAlgorithmException;
 public final class FileOperationsMinio {
 
     private MinioClient minioClient;
-    private final String bucketName = "asiatrip";
+    private String bucketName = "asiatrip";
     private final String minioEndpoint = "http://localhost:9000";
     private final String minioUser = "minioadmin";
     private final String minioPass = "minioadmin";
+    private boolean errorConnection = false;
 
     public FileOperationsMinio() {
         try{
@@ -35,6 +40,23 @@ public final class FileOperationsMinio {
         }catch(java.io.IOException | java.security.NoSuchAlgorithmException | java.security.InvalidKeyException e){
             e.printStackTrace();
         }
+    }
+
+    public FileOperationsMinio(String bucketName) {
+        try{
+            setBucketName(bucketName);
+            createMinioClient();
+        }catch(java.io.IOException | java.security.NoSuchAlgorithmException | java.security.InvalidKeyException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void setBucketName(String bucketName) {
+        this.bucketName = bucketName;
+    }
+
+    public boolean getErrorConnection() {
+        return this.errorConnection;
     }
 
     public void createMinioClient() throws IOException, NoSuchAlgorithmException, InvalidKeyException {
@@ -50,13 +72,14 @@ public final class FileOperationsMinio {
             if (!found) {
                 // Make a new bucket called 'asiatrip'.
                 minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
-                System.out.println("ERROR. :(");
+                // System.out.println("ERROR. :(");
             } else {
-                System.out.println("Bucket 'asiatrip' already exists. ;)");
+                System.out.println("Bucket '"+ bucketName +"' already exists. ;)");
             }
         } catch (MinioException e) {
             System.out.println("Error occurred: " + e);
             System.out.println("HTTP trace: " + e.httpTrace());
+            errorConnection = true;
         }
     }
 
@@ -91,6 +114,26 @@ public final class FileOperationsMinio {
                 e.printStackTrace();
         }
         return state;
+    }
+
+    public InputStream downloadObjectAndUnzipFileToInputStream(String fileName, String localFileFolder) {
+        InputStream dicomStream = null;
+        try{
+            String downloadedFile = localFileFolder + java.io.File.separator + fileName;
+            File zipFile = new File(downloadedFile);
+            if(!zipFile.exists()){
+                minioClient.downloadObject(
+                    DownloadObjectArgs.builder()
+                    .bucket(bucketName)
+                    .object(fileName)
+                    .filename(downloadedFile)
+                    .build());
+                dicomStream = unzipFileToInputStream(downloadedFile);
+            }
+        }catch(IOException | MinioException | InvalidKeyException | NoSuchAlgorithmException e){
+                e.printStackTrace();
+        }
+        return dicomStream;
     }
 
     public boolean removeObject(String fileName) {
@@ -164,6 +207,26 @@ public final class FileOperationsMinio {
             exists = false;
         }
         return exists;
+    }
+
+    public InputStream unzipFileToInputStream(String downloadedZipFile) {
+        ZipUtility zip = new ZipUtility();
+        File zipFile = new File(downloadedZipFile);
+        File dicomFile = new File(zipFile.getParent() + java.io.File.separator + zipFile.getName().replace(".zip", ".dcm"));
+        InputStream dicomFileStream = null;
+        try{
+            /*\/ descompactar no mesmo local que o arquivo zip; */
+            zip.unzipFile(downloadedZipFile, zipFile.getParent());
+            if(dicomFile.exists()){
+                dicomFileStream = new FileInputStream(dicomFile);
+                // System.out.println( "OK: " + (dicomFileStream != null) );
+                zipFile.delete();
+                dicomFile.delete();
+            }
+        }catch(java.io.FileNotFoundException e){
+            e.printStackTrace();
+        }
+        return dicomFileStream;
     }
 
 }

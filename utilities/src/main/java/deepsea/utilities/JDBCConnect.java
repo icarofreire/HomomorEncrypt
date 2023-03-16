@@ -179,7 +179,8 @@ public final class JDBCConnect {
 
     public String tamanhoBanco(){
         String count = null;
-        final String query = "SELECT pg_size_pretty(pg_database_size('"+ banco +"'));";
+        // final String query = "SELECT pg_size_pretty(pg_database_size('"+ banco +"'));";
+        final String query = "SELECT pg_size_pretty(pg_database_size('"+ banco +"')*1024);"; // in GB;
         try{
             ResultSet result = executeQuery(query);
             while(result.next()){
@@ -319,29 +320,73 @@ public final class JDBCConnect {
         return attr;
     }
 
-    public void transferImagesToMinio(){
-        try{
-            FileOperationsMinio minio = new FileOperationsMinio();
-            long totalObjects = minio.totalObjects();
-            long totalRegistrosBanco = numeroRegistros();
-            if(totalRegistrosBanco > totalObjects){
-                for(long id = totalObjects; id <= totalRegistrosBanco; id++){
-                    long idImage = id;
-                    String nomeArquivoImagem = selectNameImage(idImage);
-                    if(nomeArquivoImagem != null){
-                        File file = new File(nomeArquivoImagem);
-                        OutputStream outStream = new FileOutputStream(file);
-                        InputStream initialStream = new ByteArrayInputStream(selectImage(idImage));
-                        initialStream.transferTo(outStream);
+    // /* \/ escrever objeto por inteiro no MinIO; */
+    // public void transferImagesToMinio(){
+    //     try{
+    //         FileOperationsMinio minio = new FileOperationsMinio();
+    //         long totalObjects = minio.totalObjects();
+    //         long totalRegistrosBanco = numeroRegistros();
+    //         if(totalRegistrosBanco > totalObjects){
+    //             for(long id = totalObjects; id <= totalRegistrosBanco; id++){
+    //                 long idImage = id;
+    //                 String nomeArquivoImagem = selectNameImage(idImage);
+    //                 if(nomeArquivoImagem != null){
+    //                     File file = new File(nomeArquivoImagem);
+    //                     OutputStream outStream = new FileOutputStream(file);
+    //                     InputStream initialStream = new ByteArrayInputStream(selectImage(idImage));
+    //                     initialStream.transferTo(outStream);
 
-                        if(!minio.ifObjectExists(file.getName())){
-                            if(minio.uploadObject(file.getName(), file.getAbsolutePath())){
-                                // System.out.println( ">> UP Ok;" );
+    //                     if(!minio.ifObjectExists(file.getName())){
+    //                         if(minio.uploadObject(file.getName(), file.getAbsolutePath())){
+    //                             // System.out.println( ">> UP Ok;" );
+    //                         }
+    //                     }else{
+    //                         // System.out.println( file.getName() + " já existe no minio;" );
+    //                     }
+    //                     file.delete();
+    //                 }
+    //             }
+    //         }
+    //         // System.out.println( ">> MinIO Total: " + minio.totalObjects() );
+    //     }catch(IOException e){}
+    // }
+
+    private String nameFileWithoutExtension(String nameFile) {
+        return nameFile.substring(0, nameFile.lastIndexOf("."));
+    }
+
+    public void transferImagesCompactToMinio() {
+        try{
+            ZipUtility zip = new ZipUtility();
+            FileOperationsMinio minio = new FileOperationsMinio("zip-dicoms");
+            if(!minio.getErrorConnection()){
+                long totalObjects = minio.totalObjects();
+                long totalRegistrosBanco = numeroRegistros();
+                if(totalRegistrosBanco > totalObjects){
+                    for(long id = totalObjects; id <= totalRegistrosBanco; id++)
+                    {
+                        String nomeArquivoImagem = selectNameImage(idImage);
+                        if(nomeArquivoImagem != null){
+                            File file = new File(nomeArquivoImagem);
+                            OutputStream outStream = new FileOutputStream(file);
+                            InputStream initialStream = new ByteArrayInputStream(selectImage(idImage));
+                            initialStream.transferTo(outStream);
+
+                            String zipName = nameFileWithoutExtension(file.getName()) + ".zip";
+                            File fileDicomZip = new File(zipName);
+                            if(zip.zipFile(file, zipName)){
+                                /*\/ *** */
+                                if(!minio.ifObjectExists(fileDicomZip.getName())){
+                                    if(minio.uploadObject(fileDicomZip.getName(), fileDicomZip.getAbsolutePath())){
+                                        // System.out.println( ">> UP Ok;" );
+                                    }
+                                }else{
+                                    // System.out.println( file.getName() + " já existe no minio;" );
+                                }
                             }
-                        }else{
-                            // System.out.println( file.getName() + " já existe no minio;" );
+                            fileDicomZip.delete();
+                            file.delete();
                         }
-                        file.delete();
                     }
                 }
             }

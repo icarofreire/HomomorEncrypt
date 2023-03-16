@@ -74,7 +74,7 @@ public final class ZipUtility {
     public void unzipFile(String fileZip, String pastaDesc) throws FileNotFoundException {
         Path filePathToUnzip = Path.of(fileZip);
         Path targetDir = Paths.get(pastaDesc);
-        if(!targetDir.toFile().exists() && filePathToUnzip.toFile().exists()){
+        if(filePathToUnzip.toFile().exists()){
             //Open the file
             try (ZipFile zip = new ZipFile(filePathToUnzip.toFile())) {
 
@@ -145,6 +145,22 @@ public final class ZipUtility {
                 file));
         this.InputStreamToOutputStream(bis, zos);
         zos.closeEntry();
+    }
+
+    public boolean zipFile(File file, String destZipFile) {
+        boolean ok = false;
+        try{
+            ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(destZipFile));
+            if (!file.isDirectory()) {
+                this.zipFile(file, zos);
+            }
+            zos.flush();
+            zos.close();
+            ok = true;
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+        return ok;
     }
 
 }

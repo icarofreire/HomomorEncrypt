@@ -45,7 +45,7 @@ public final class Scheduler {
 
         final JDBCConnect banco = new JDBCConnect();
         /*\/ transferir imagens para o servidor MinIO; */
-        banco.transferImagesToMinio();
+        banco.transferImagesCompactToMinio();
         banco.close();
     }
 
