@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 import java.io.File;
 import java.nio.file.Files;
@@ -51,7 +53,8 @@ public final class BuscasDicom extends SftpClient {
     private final int maxSubpastas = 10;
     /*\/ pastas que possuem profundo grau de subpastas encontradas na busca; */
     private final List<String> pastasEvit = new ArrayList<String>();
-    private final List<String> pastasVisi = new ArrayList<String>();
+    // private final List<String> pastasVisi = new ArrayList<String>();
+    private final Set<String> pastasVisi = new HashSet<String>();
     /*\/ pasta para baixar os arquivos dicoms encontrados no servidor; */
     private final String pastaDownDicoms = "DownDicoms";
     /*\/ log de dados do banco; */
@@ -244,8 +247,13 @@ public final class BuscasDicom extends SftpClient {
         AC_DcmStructure dcmStructure = null;
         try {
             dcmStructure = dicomReader.getAttirbutes();
-            attr = dcmStructure.getAttributes();
-            // HashMap<Integer, String[]> partags = dicomReader.getBitTagToHexParTag();
+            if(dcmStructure != null){
+                attr = dcmStructure.getAttributes();
+                // HashMap<Integer, String[]> partags = dicomReader.getBitTagToHexParTag();
+            }else{
+                /*\/ not dicom(.dcm/.ima) file; */
+                // System.out.println(">> [NULL];");
+            }
         } catch (java.io.IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -273,6 +281,7 @@ public final class BuscasDicom extends SftpClient {
         this.freeWalk(remoteDir);
 
         if(this.filesDicom.size() > 0){
+            System.out.println(this.filesDicom.size() + " imagens encontradas;");
             /*\/ consultar os arquivos no banco, antes de realizar o download dos mesmos; */
             List<String> inexistsFiles = this.consultarArquivosBanco();
             if(inexistsFiles.size() > 0){

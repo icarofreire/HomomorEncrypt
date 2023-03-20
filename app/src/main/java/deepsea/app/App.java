@@ -22,16 +22,15 @@ public class App {
         sche.ini();
 
         // JDBCConnect banco = new JDBCConnect();
+        // banco.transferImagesToMinio();
         // banco.transferImagesCompactToMinio();
-        // System.out.println(">> Tamanho DB: " + banco.tamanhoBanco());
-        // System.out.println(">> Número registros: " + banco.numeroRegistros());
         // banco.close();
 
-        // FileOperationsMinio minio = new FileOperationsMinio("zip-dicoms");
+        // FileOperationsMinio minio = new FileOperationsMinio("icaroteste");
         // if(!minio.getErrorConnection()){
-        //     System.out.println("T: " + minio.totalObjects());
         //     minio.listObjects();
-        //     // minio.downloadObjectAndUnzipFileToInputStream("1.2.392.200036.9107.307.31409.20230222.225031.1066960.zip", "/home/icaro/Documentos/DeepSea");
+        //     System.out.println("T: " + minio.totalObjects());
+        // //     // minio.downloadObjectAndUnzipFileToInputStream("1.2.392.200036.9107.307.31409.20230222.225031.1066960.zip", "/home/icaro/Documentos/DeepSea");
         // }
 
     }

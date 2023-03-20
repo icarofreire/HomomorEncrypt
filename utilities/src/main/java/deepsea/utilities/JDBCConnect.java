@@ -297,59 +297,71 @@ public final class JDBCConnect {
             OutputStream outStream = new FileOutputStream(targetFile);
             InputStream initialStream = new ByteArrayInputStream(selectImage(300));
             initialStream.transferTo(outStream);
-            parseDicom(targetFile);
+            if(parseDicom(targetFile)){
+                System.out.println( ">> DICOM OK;" );
+            }else{
+                System.out.println( ">> ERROR DICOM;" );
+            }
             targetFile.delete();
         }catch(IOException e){}
     }
 
-    private LinkedHashMap<Integer, String[]> parseDicom(File dicom) {
+    private boolean parseDicom(File dicom) {
+        boolean ok = false;
         LinkedHashMap<Integer, String[]> attr = null;
         AC_DicomReader dicomReader = new AC_DicomReader();
         dicomReader.readDCMFile(dicom.getAbsolutePath());
         AC_DcmStructure dcmStructure = null;
         try {
             dcmStructure = dicomReader.getAttirbutes();
-            attr = dcmStructure.getAttributes();
-            System.out.println( ">> TAM: " + attr.size() );
-            System.out.println( ">> TESTE DICOM: " + (attr.size() > 0) );
-            // HashMap<Integer, String[]> partags = dicomReader.getBitTagToHexParTag();
+            if(dcmStructure != null){
+                attr = dcmStructure.getAttributes();
+                // HashMap<Integer, String[]> partags = dicomReader.getBitTagToHexParTag();
+                ok = (attr.size() > 0);
+            }else{
+                /*\/ not dicom(.dcm/.ima) file; */
+                ok = false;
+            }
         } catch (java.io.IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return attr;
+        return ok;
     }
 
     // /* \/ escrever objeto por inteiro no MinIO; */
-    // public void transferImagesToMinio(){
-    //     try{
-    //         FileOperationsMinio minio = new FileOperationsMinio();
-    //         long totalObjects = minio.totalObjects();
-    //         long totalRegistrosBanco = numeroRegistros();
-    //         if(totalRegistrosBanco > totalObjects){
-    //             for(long id = totalObjects; id <= totalRegistrosBanco; id++){
-    //                 long idImage = id;
-    //                 String nomeArquivoImagem = selectNameImage(idImage);
-    //                 if(nomeArquivoImagem != null){
-    //                     File file = new File(nomeArquivoImagem);
-    //                     OutputStream outStream = new FileOutputStream(file);
-    //                     InputStream initialStream = new ByteArrayInputStream(selectImage(idImage));
-    //                     initialStream.transferTo(outStream);
+    public void transferImagesToMinio(){
+        try{
+            FileOperationsMinio minio = new FileOperationsMinio("icaroteste");
+            if(!minio.getErrorConnection()){
+                long totalObjects = minio.totalObjects();
+                long totalRegistrosBanco = numeroRegistros();
+                if(totalRegistrosBanco > totalObjects){
+                    for(long id = totalObjects; id <= totalRegistrosBanco; id++)
+                    {
+                        long idImage = id;
+                        String nomeArquivoImagem = selectNameImage(idImage);
+                        if(nomeArquivoImagem != null){
+                            File file = new File(nomeArquivoImagem);
+                            OutputStream outStream = new FileOutputStream(file);
+                            InputStream initialStream = new ByteArrayInputStream(selectImage(idImage));
+                            initialStream.transferTo(outStream);
 
-    //                     if(!minio.ifObjectExists(file.getName())){
-    //                         if(minio.uploadObject(file.getName(), file.getAbsolutePath())){
-    //                             // System.out.println( ">> UP Ok;" );
-    //                         }
-    //                     }else{
-    //                         // System.out.println( file.getName() + " já existe no minio;" );
-    //                     }
-    //                     file.delete();
-    //                 }
-    //             }
-    //         }
-    //         // System.out.println( ">> MinIO Total: " + minio.totalObjects() );
-    //     }catch(IOException e){}
-    // }
+                            if(!minio.ifObjectExists(file.getName())){
+                                if(minio.uploadObject(file.getName(), file.getAbsolutePath())){
+                                    // System.out.println( ">> UP Ok;" );
+                                }
+                            }else{
+                                // System.out.println( file.getName() + " já existe no minio;" );
+                            }
+                            file.delete();
+                        }
+                    }
+                }
+            }
+            // System.out.println( ">> MinIO Total: " + minio.totalObjects() );
+        }catch(IOException e){}
+    }
 
     private String nameFileWithoutExtension(String nameFile) {
         return nameFile.substring(0, nameFile.lastIndexOf("."));

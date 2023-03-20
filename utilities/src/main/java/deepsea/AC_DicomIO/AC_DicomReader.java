@@ -168,8 +168,10 @@ public class AC_DicomReader {
 		//	{ skip(m_nElementLength);
 				//continue;
 			//}
-			
-			
+
+			if(AC_VR.getVRName(m_VR) == "" && ouptutAttributes.getAttributes().size() == 0){
+				return null;
+			}
 	
 			if(tag==AC_Tag.TransferSyntaxUID)
 			{			
