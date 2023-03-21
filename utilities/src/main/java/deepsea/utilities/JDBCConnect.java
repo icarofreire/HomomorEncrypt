@@ -39,8 +39,13 @@ public final class JDBCConnect {
     private Statement stmt = null;
 
     /*\/ informações banco; */
+    // private final String ipPorta = "172.25.190.10:5432";
+    // private final String banco = "images_dicom";
+    // private final String usuario = "postgres";
+    // private final String senha = "PpSes2020!2019ProdPass";
+    
     private final String ipPorta = "172.25.190.10:5432";
-    private final String banco = "images_dicom";
+    private final String banco = "compact_dicoms";
     private final String usuario = "postgres";
     private final String senha = "PpSes2020!2019ProdPass";
 
@@ -95,7 +100,7 @@ public final class JDBCConnect {
 
     public long consultarImagem(String caminhoImagem){
         long count = 0;
-        final String query = "SELECT count(*) AS count FROM public.tb_images_dicom t WHERE t.absolute_path_file = '" + caminhoImagem + "';";
+        final String query = "SELECT count(*) AS count FROM public.tb_images_dicom t WHERE t.name_file = '" + caminhoImagem + "';";
         try{
             ResultSet result = executeQuery(query);
             while(result.next()){
@@ -136,7 +141,7 @@ public final class JDBCConnect {
         "study_date," +
         "study_id," +
         "series_number," +
-        "absolute_path_file" +
+        "name_file" +
         ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
         try{
             long ultimoId = ultimoIdTabela();
@@ -222,7 +227,7 @@ public final class JDBCConnect {
         study_date character varying(255),
         study_id character varying(255),
         series_number character varying(255),
-        absolute_path_file character varying(255) NOT NULL
+        name_file character varying(255) NOT NULL
     );
     */
     public String criarTabela(){
@@ -240,7 +245,7 @@ public final class JDBCConnect {
         "study_date character varying(255), \n" +
         "study_id character varying(255), \n" +
         "series_number character varying(255), \n" +
-        "absolute_path_file character varying(255) NOT NULL \n" +
+        "name_file character varying(255) NOT NULL \n" +
         ");";
         try{
             stmt.execute(query);
@@ -275,15 +280,11 @@ public final class JDBCConnect {
 
     public String selectNameImage(long id){
         String count = null;
-        final String query = "SELECT t.absolute_path_file FROM public.tb_images_dicom t where t.id = " + id + ";";
+        final String query = "SELECT t.name_file FROM public.tb_images_dicom t where t.id = " + id + ";";
         try{
             ResultSet result = executeQuery(query);
             while(result.next()){
-                count = result.getString("absolute_path_file");
-            }
-            if(count != null){
-                String[] parts = count.split("\\/");
-                count = parts[parts.length-1];
+                count = result.getString("name_file");
             }
         }catch(SQLException e){
             e.printStackTrace();
@@ -303,6 +304,38 @@ public final class JDBCConnect {
                 System.out.println( ">> ERROR DICOM;" );
             }
             targetFile.delete();
+        }catch(IOException e){}
+    }
+
+    private void copyInputStreamToFile(InputStream inputStream, File file) throws IOException {
+        try (FileOutputStream outputStream = new FileOutputStream(file, false)) {
+            inputStream.transferTo(outputStream);
+        }
+    }
+
+    public void testeBaixarImagemZIPDICOM() {
+        try{
+            long id = 2937; // << exemplo de id de imagem;
+            ZipUtility zip = new ZipUtility();
+            String nameImage = selectNameImage(id).replace(".dcm", "");
+            File targetFile = new File(nameImage + ZipUtility.format);
+            OutputStream outStream = new FileOutputStream(targetFile);
+            InputStream initialStream = new ByteArrayInputStream(selectImage(id));
+            initialStream.transferTo(outStream);
+
+            /*\/ descompactar no mesmo local que o arquivo zip; */
+            zip.unzipFile(targetFile.getAbsolutePath(), ".");
+            File dicomFile = new File(nameImage + ".dcm");
+            System.out.println( dicomFile.getAbsolutePath() );
+            if(dicomFile.exists()){
+                if(parseDicom(dicomFile)){
+                    System.out.println( ">> DICOM OK;" );
+                }else{
+                    System.out.println( ">> ERROR DICOM;" );
+                }
+            }
+            targetFile.delete();
+            dicomFile.delete();
         }catch(IOException e){}
     }
 
@@ -385,7 +418,7 @@ public final class JDBCConnect {
                             InputStream initialStream = new ByteArrayInputStream(selectImage(idImage));
                             initialStream.transferTo(outStream);
 
-                            String zipName = nameFileWithoutExtension(file.getName()) + ".zip";
+                            String zipName = nameFileWithoutExtension(file.getName()) + ZipUtility.format;
                             File fileDicomZip = new File(zipName);
                             if(zip.zipFile(file, zipName)){
                                 /*\/ *** */

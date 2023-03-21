@@ -36,9 +36,10 @@ import java.nio.file.FileSystems;
 */
 public final class ZipUtility {
 
+    public final static String format = ".zip";
 
     public void zipDirectory(String caminhoPasta, String nomeArquivoCompactar) throws IOException {
-        FileOutputStream fos = new FileOutputStream(nomeArquivoCompactar + ".zip");
+        FileOutputStream fos = new FileOutputStream(nomeArquivoCompactar + format);
         ZipOutputStream zipOut = new ZipOutputStream(fos);
         File fileToZip = new File(caminhoPasta);
 

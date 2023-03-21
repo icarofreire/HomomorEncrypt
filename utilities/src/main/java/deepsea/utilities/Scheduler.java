@@ -43,10 +43,10 @@ public final class Scheduler {
             e.printStackTrace();
         }
 
-        final JDBCConnect banco = new JDBCConnect();
+        // final JDBCConnect banco = new JDBCConnect();
         /*\/ transferir imagens para o servidor MinIO; */
-        banco.transferImagesCompactToMinio();
-        banco.close();
+        // banco.transferImagesCompactToMinio();
+        // banco.close();
     }
 
     public void ini() {

@@ -44,7 +44,7 @@ public final class BuscasDicom extends SftpClient {
     /*\/ profundidade de pastas da recursividade; */
     private final long maxProfund = 500;
     /*\/ quantidade máxima de arquivos a serem baixados do servidor; */
-    private final long maxDownloadFiles = 400;
+    private final long maxDownloadFiles = 1000;
     /*\/ tipos de arquivos a procurar nas buscas em pasta e subpastas; */
     private final List<String> filesTypes = Arrays.asList(".dcm", ".ima");
     /*\/ pasta base onde a busca é iniciada; */
@@ -205,15 +205,33 @@ public final class BuscasDicom extends SftpClient {
         }
     }
 
+    private String nameFileWithoutExtension(String nameFile) {
+        return nameFile.substring(0, nameFile.lastIndexOf("."));
+    }
+
+    private InputStream streamCompactFile(File file, final ZipUtility zip) throws java.io.IOException {
+        InputStream zipDicomStream = null;
+        String zipName = nameFileWithoutExtension(file.getName()) + ZipUtility.format;
+        File fileDicomZip = new File(zipName);
+        if(zip.zipFile(file, zipName)){
+            zipDicomStream = new FileInputStream(fileDicomZip);
+            fileDicomZip.delete();
+        }
+        return zipDicomStream;
+    }
+
     private void connectAndSendFiles(File dirBase, List<String> caminhoDicomsDown) {
         try{
             if(dirBase.exists()){
                 if(verbose) System.out.println(">> Enviando imagens ao DB;");
                 File[] arqsBaixados = dirBase.listFiles();
                 final JDBCConnect banco = new JDBCConnect();
+                final ZipUtility zip = new ZipUtility();
                 for(int i=0; i<arqsBaixados.length; i++){
                     File file = arqsBaixados[i];
                     InputStream fileStream = new FileInputStream(file);
+
+                    fileStream = streamCompactFile(file, zip);
 
                     LinkedHashMap<Integer, String[]> atributesDicom = parseDicom(file);
                     if(atributesDicom != null){
@@ -227,7 +245,17 @@ public final class BuscasDicom extends SftpClient {
                         values.add( (atributesDicom.containsKey((0x0008 << 16 | 0x0020))) ? (atributesDicom.get((0x0008 << 16 | 0x0020))[1]) : (null) ); // study_date;
                         values.add( (atributesDicom.containsKey((0x0020 << 16 | 0x0010))) ? (atributesDicom.get((0x0020 << 16 | 0x0010))[1]) : (null) ); // study_id;
                         values.add( (atributesDicom.containsKey((0x0020 << 16 | 0x0011))) ? (atributesDicom.get((0x0020 << 16 | 0x0011))[1]) : (null) ); // series_number;
-                        values.add( caminhoDicomsDown.get(i) ); // path;
+                        values.add( file.getName() ); // path;
+
+                        // String studyDate = (atributesDicom.containsKey((0x0008 << 16 | 0x0020))) ? (atributesDicom.get((0x0008 << 16 | 0x0020))[1]) : (null);
+                        // if(studyDate != null){
+                        //     /* formato da data: "20221208"; ex: "20221209" */
+                        //     String ano = studyDate.substring(0, 4); // ano;
+                        //     String mes = studyDate.substring(4, 6); // mes;
+                        //     String dia = studyDate.substring(6, 8); // dia;
+                        //     System.out.println(">>" + studyDate);
+                        //     System.out.println(">>" + dia + "/" + mes + "/" + ano);
+                        // }
 
                         if(banco.seConectado()){
                             banco.inserir(values, fileStream);
@@ -264,9 +292,25 @@ public final class BuscasDicom extends SftpClient {
     private List<String> consultarArquivosBanco() {
         List<String> arqsInexis = null;
         final JDBCConnect con = new JDBCConnect();
+
+        List<String> listVeri = new ArrayList<>();
+        if(this.filesDicom.size() > maxDownloadFiles) {
+            /*\/ fatia das arquivos a serem enviados pelo limitador de arquvos baixados; */
+            List<String> part = this.filesDicom.subList(new Long(maxDownloadFiles).intValue(), this.filesDicom.size()-1);
+            listVeri = part;
+        }else{
+            listVeri = this.filesDicom;
+        }
+
         if(con.seConectado()){
             /*\/ arquivos inexistentes no banco; */
-            arqsInexis = this.filesDicom.stream().filter(file -> (con.consultarImagem(file) == 0)).collect(Collectors.toList());
+            arqsInexis = listVeri.stream().filter(file -> {
+
+                String[] parts = file.split("\\/");
+                file = parts[parts.length-1];
+
+                return (con.consultarImagem(file) == 0);
+            }).collect(Collectors.toList());
         }
         con.close();
         return arqsInexis;

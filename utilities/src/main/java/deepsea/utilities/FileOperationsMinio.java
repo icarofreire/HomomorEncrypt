@@ -29,9 +29,14 @@ public final class FileOperationsMinio {
 
     private MinioClient minioClient;
     private String bucketName = "asiatrip";
-    private final String minioEndpoint = "http://localhost:9000";
-    private final String minioUser = "minioadmin";
-    private final String minioPass = "minioadmin";
+    // private final String minioEndpoint = "http://localhost:9000";
+    // private final String minioUser = "minioadmin";
+    // private final String minioPass = "minioadmin";
+
+    private final String minioEndpoint = "http://172.25.190.10:9000";
+    private final String minioUser = "SES_ROOT_SES";
+    private final String minioPass = "c2VzMjAyMHNlczIwMjBzZXMyMDIwCg";
+
     private boolean errorConnection = false;
 
     public FileOperationsMinio() {
@@ -212,7 +217,7 @@ public final class FileOperationsMinio {
     public InputStream unzipFileToInputStream(String downloadedZipFile) {
         ZipUtility zip = new ZipUtility();
         File zipFile = new File(downloadedZipFile);
-        File dicomFile = new File(zipFile.getParent() + java.io.File.separator + zipFile.getName().replace(".zip", ".dcm"));
+        File dicomFile = new File(zipFile.getParent() + java.io.File.separator + zipFile.getName().replace(ZipUtility.format, ".dcm"));
         InputStream dicomFileStream = null;
         try{
             /*\/ descompactar no mesmo local que o arquivo zip; */
