@@ -42,25 +42,9 @@ public class App {
         // FileOperationsMinio minio = new FileOperationsMinio("compact-dicoms");
         // if(!minio.getErrorConnection()){
         //     minio.listObjects();
-        // //     System.out.println("T: " + minio.totalObjects());
-        // // //     // minio.downloadObjectAndUnzipFileToInputStream("1.2.392.200036.9107.307.31409.20230222.225031.1066960.zip", "/home/icaro/Documentos/DeepSea");
+        //     System.out.println("T: " + minio.totalObjects());
+        //     // minio.downloadObjectAndUnzipFileToInputStream("1.2.392.200036.9107.307.31409.20230222.225031.1066960.zip", "/home/icaro/Documentos/DeepSea");
         // }
-
-        // File file = new File("/home/icaro/Downloads/dicom/teste/dicom-teste.dcm");
-        // Compress comp = new Compress();
-
-        // String fileName = "/home/icaro/Downloads/dicom/teste/dicom-teste.dcm";
-        // String fileName = "/home/icaro/Downloads/Effective_Modern_CPP.pdf";
-
-        // comp.compress(fileName, "HelloSnappy" + comp.ext);
-        // comp.decompress("HelloSnappy" + comp.ext, "Effective_Modern_CPP.dcm");
-
-        // comp.CompressXz(fileName, "HelloSnappy.xz");
-        // comp.DecompressXz("HelloSnappy.xz", "Effective_Modern_CPP.dcm");
-
-        // comp.LZ4compress(fileName);
-        // comp.LZ4Uncompress("dicom-teste.lz4", "Effective_Modern_CPP.dcm");
-
 
     }
 }

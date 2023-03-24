@@ -421,8 +421,8 @@ public final class JDBCConnect {
 
     public void transferImagesCompactToMinio() {
         try{
-            ZipUtility zip = new ZipUtility();
-            FileOperationsMinio minio = new FileOperationsMinio("zip-dicoms");
+            Compress comp = new Compress();
+            FileOperationsMinio minio = new FileOperationsMinio("comp-dicoms");
             if(!minio.getErrorConnection()){
                 long totalObjects = minio.totalObjects();
                 long totalRegistrosBanco = numeroRegistros();
@@ -437,19 +437,19 @@ public final class JDBCConnect {
                             InputStream initialStream = new ByteArrayInputStream(selectImage(idImage));
                             initialStream.transferTo(outStream);
 
-                            String zipName = nameFileWithoutExtension(file.getName()) + ZipUtility.format;
-                            File fileDicomZip = new File(zipName);
-                            if(zip.zipFile(file, zipName)){
+                            String pathFileCompactedName = nameFileWithoutExtension(file.getName()) + Compress.ext;
+                            File fileDicomComp = new File(pathFileCompactedName);
+                            if(comp.compress(file.getAbsolutePath(), pathFileCompactedName)){
                                 /*\/ *** */
-                                if(!minio.ifObjectExists(fileDicomZip.getName())){
-                                    if(minio.uploadObject(fileDicomZip.getName(), fileDicomZip.getAbsolutePath())){
+                                if(!minio.ifObjectExists(fileDicomComp.getName())){
+                                    if(minio.uploadObject(fileDicomComp.getName(), fileDicomComp.getAbsolutePath())){
                                         // System.out.println( ">> UP Ok;" );
                                     }
                                 }else{
                                     // System.out.println( file.getName() + " já existe no minio;" );
                                 }
                             }
-                            fileDicomZip.delete();
+                            fileDicomComp.delete();
                             file.delete();
                         }
                     }
