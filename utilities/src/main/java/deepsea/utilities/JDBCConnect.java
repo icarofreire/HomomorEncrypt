@@ -4,11 +4,13 @@
 package deepsea.utilities;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.io.IOException;
+import java.io.InputStream;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,7 +18,6 @@ import java.sql.Statement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.PreparedStatement;
-import java.io.InputStream;
 import org.postgresql.Driver;
 
 /*\/ procedimentos para criar testes de autenticidade de imagens dicoms;  */
@@ -30,6 +31,7 @@ import AC_DicomIO.AC_DcmStructure;
 import AC_DicomIO.AC_DicomReader;
 
 import deepsea.utilities.FileOperationsMinio;
+import deepsea.utilities.Compress;
 
 /**
  * 
@@ -48,6 +50,12 @@ public final class JDBCConnect {
     private final String banco = "compact_dicoms";
     private final String usuario = "postgres";
     private final String senha = "PpSes2020!2019ProdPass";
+
+    // private final String ipPorta = "localhost:5432";
+    // private final String banco = "galen";
+    // private final String usuario = "postgres";
+    // private final String senha = "postgres";
+
 
     public JDBCConnect(){
         try {
@@ -313,30 +321,41 @@ public final class JDBCConnect {
         }
     }
 
-    public void testeBaixarImagemZIPDICOM() {
+    public byte[] readBytes(File file) {
+        byte[] bytes = null;
         try{
-            long id = 2937; // << exemplo de id de imagem;
-            ZipUtility zip = new ZipUtility();
+            bytes = Files.readAllBytes(file.toPath());
+        }catch(IOException e){}
+        return bytes;
+    }
+
+    public byte[] getBytesImageByID(long id) {
+        byte[] bytes = null;
+        try{
+            Compress comp = new Compress();
             String nameImage = selectNameImage(id).replace(".dcm", "");
-            File targetFile = new File(nameImage + ZipUtility.format);
+            File targetFile = new File(nameImage + Compress.ext);
+
             OutputStream outStream = new FileOutputStream(targetFile);
             InputStream initialStream = new ByteArrayInputStream(selectImage(id));
             initialStream.transferTo(outStream);
 
-            /*\/ descompactar no mesmo local que o arquivo zip; */
-            zip.unzipFile(targetFile.getAbsolutePath(), ".");
+            /*\/ descompactar no mesmo local que o arquivo; */
+            comp.decompress(targetFile.getAbsolutePath(), targetFile.getAbsolutePath().replace(Compress.ext, ".dcm"));
+
             File dicomFile = new File(nameImage + ".dcm");
-            System.out.println( dicomFile.getAbsolutePath() );
             if(dicomFile.exists()){
                 if(parseDicom(dicomFile)){
-                    System.out.println( ">> DICOM OK;" );
+                    // System.out.println( ">> DICOM OK;" );
+                    bytes = readBytes(dicomFile);
                 }else{
-                    System.out.println( ">> ERROR DICOM;" );
+                    // System.out.println( ">> ERROR DICOM;" );
                 }
             }
             targetFile.delete();
             dicomFile.delete();
         }catch(IOException e){}
+        return bytes;
     }
 
     private boolean parseDicom(File dicom) {

@@ -22,16 +22,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
-import deepsea.utilities.LogFile;
 import deepsea.utilities.SftpClient;
-import deepsea.utilities.ZipUtility;
-import deepsea.utilities.ChecksumFile;
+import deepsea.utilities.Compress;
 import deepsea.utilities.JDBCConnect;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+// import java.time.LocalDateTime;
+// import java.time.format.DateTimeFormatter;
 
 /*\/ parse dicom; */
 import AC_DicomIO.AC_DcmStructure;
@@ -45,8 +43,10 @@ public final class BuscasDicom extends SftpClient {
     private final long maxProfund = 500;
     /*\/ quantidade máxima de arquivos a serem baixados do servidor; */
     private final long maxDownloadFiles = 1000;
+    /*\/ extensão do arquivo DICOM; */
+    private final String extDICOM = ".dcm";
     /*\/ tipos de arquivos a procurar nas buscas em pasta e subpastas; */
-    private final List<String> filesTypes = Arrays.asList(".dcm", ".ima");
+    private final List<String> filesTypes = Arrays.asList(extDICOM/*, ".ima"*/);
     /*\/ pasta base onde a busca é iniciada; */
     private String pastaBase = null;
     /*\/ profundidade de subpastas em uma pasta encontrada na busca; */
@@ -63,6 +63,8 @@ public final class BuscasDicom extends SftpClient {
     private final List<String> filesDicom = new ArrayList<String>();
     /*\/ info processo de realização do procedimento; */
     private final boolean verbose = true;
+    /*\/ classe para comprimir arquivos; */
+    private final Compress comp = new Compress();
 
     public BuscasDicom(String host, String username, String password) throws JSchException {
         super(host, username, password);
@@ -209,13 +211,15 @@ public final class BuscasDicom extends SftpClient {
         return nameFile.substring(0, nameFile.lastIndexOf("."));
     }
 
-    private InputStream streamCompactFile(File file, final ZipUtility zip) throws java.io.IOException {
+    private InputStream streamCompactFile(File file) throws java.io.IOException {
         InputStream zipDicomStream = null;
-        String zipName = nameFileWithoutExtension(file.getName()) + ZipUtility.format;
-        File fileDicomZip = new File(zipName);
-        if(zip.zipFile(file, zipName)){
-            zipDicomStream = new FileInputStream(fileDicomZip);
-            fileDicomZip.delete();
+        String absPath = file.getAbsolutePath();
+        String compressFileName = absPath.replace(extDICOM, Compress.ext);
+        File fileDicomComp = new File(compressFileName);
+
+        if(comp.compress(absPath, compressFileName)){
+            zipDicomStream = new FileInputStream(fileDicomComp);
+            fileDicomComp.delete();
         }
         return zipDicomStream;
     }
@@ -226,12 +230,11 @@ public final class BuscasDicom extends SftpClient {
                 if(verbose) System.out.println(">> Enviando imagens ao DB;");
                 File[] arqsBaixados = dirBase.listFiles();
                 final JDBCConnect banco = new JDBCConnect();
-                final ZipUtility zip = new ZipUtility();
                 for(int i=0; i<arqsBaixados.length; i++){
                     File file = arqsBaixados[i];
                     InputStream fileStream = new FileInputStream(file);
 
-                    fileStream = streamCompactFile(file, zip);
+                    fileStream = streamCompactFile(file);
 
                     LinkedHashMap<Integer, String[]> atributesDicom = parseDicom(file);
                     if(atributesDicom != null){
@@ -338,24 +341,24 @@ public final class BuscasDicom extends SftpClient {
         if(verbose) System.out.println(">> Fim;");
     }
 
-    /*\/ criar log de dados do banco; */
-    private void createLogDadosDB() {
-        final JDBCConnect banco = new JDBCConnect();
-        /*\/ date now(); */
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-        String formattedDateTime = LocalDateTime.now().format(formatter);
-        File logCheck = new File(arquivoLogDadosDB);
-        boolean append = logCheck.exists();
-        try {
-            FileWriter myWriter = new FileWriter(arquivoLogDadosDB, /*append*/ false);
-            myWriter.write(">> Tamanho DB: " + banco.tamanhoBanco() + "|" + formattedDateTime + ";\n");
-            myWriter.write(">> Número registros: " + banco.numeroRegistros() + "|" + formattedDateTime + ";\n");
-            myWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        banco.close();
-    }
+    // /*\/ criar log de dados do banco; */
+    // private void createLogDadosDB() {
+    //     final JDBCConnect banco = new JDBCConnect();
+    //     /*\/ date now(); */
+    //     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    //     String formattedDateTime = LocalDateTime.now().format(formatter);
+    //     File logCheck = new File(arquivoLogDadosDB);
+    //     boolean append = logCheck.exists();
+    //     try {
+    //         FileWriter myWriter = new FileWriter(arquivoLogDadosDB, /*append*/ false);
+    //         myWriter.write(">> Tamanho DB: " + banco.tamanhoBanco() + "|" + formattedDateTime + ";\n");
+    //         myWriter.write(">> Número registros: " + banco.numeroRegistros() + "|" + formattedDateTime + ";\n");
+    //         myWriter.close();
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+    //     banco.close();
+    // }
 
     public void close() {
         super.close();

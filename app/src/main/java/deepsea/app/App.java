@@ -15,11 +15,18 @@ import deepsea.utilities.FileOperationsMinio;
 import AC_DicomIO.AC_DcmStructure;
 import AC_DicomIO.AC_DicomReader;
 
+// import net.jpountz.lz4.LZ4Factory;
+// import net.jpountz.lz4.LZ4Compressor;
+
+import java.io.File;
+import deepsea.utilities.Compress;
+import java.io.RandomAccessFile;
+
 public class App {
     public static void main(String[] args) {
 
-        Scheduler sche = new Scheduler();
-        sche.ini();
+        // Scheduler sche = new Scheduler();
+        // sche.ini();
 
         // try{
         //     final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
@@ -35,15 +42,32 @@ public class App {
         // banco.close();
 
         // JDBCConnect banco = new JDBCConnect();
-        // banco.testeBaixarImagemZIPDICOM();
+        // byte[] bytes = banco.getBytesImageByID(1);
+        // System.out.println("bytes: " + bytes.length);
         // banco.close();
 
         // FileOperationsMinio minio = new FileOperationsMinio("compact-dicoms");
         // if(!minio.getErrorConnection()){
-            // minio.listObjects();
+        //     minio.listObjects();
         // //     System.out.println("T: " + minio.totalObjects());
         // // //     // minio.downloadObjectAndUnzipFileToInputStream("1.2.392.200036.9107.307.31409.20230222.225031.1066960.zip", "/home/icaro/Documentos/DeepSea");
         // }
+
+        // File file = new File("/home/icaro/Downloads/dicom/teste/dicom-teste.dcm");
+        // Compress comp = new Compress();
+
+        // String fileName = "/home/icaro/Downloads/dicom/teste/dicom-teste.dcm";
+        // String fileName = "/home/icaro/Downloads/Effective_Modern_CPP.pdf";
+
+        // comp.compress(fileName, "HelloSnappy" + comp.ext);
+        // comp.decompress("HelloSnappy" + comp.ext, "Effective_Modern_CPP.dcm");
+
+        // comp.CompressXz(fileName, "HelloSnappy.xz");
+        // comp.DecompressXz("HelloSnappy.xz", "Effective_Modern_CPP.dcm");
+
+        // comp.LZ4compress(fileName);
+        // comp.LZ4Uncompress("dicom-teste.lz4", "Effective_Modern_CPP.dcm");
+
 
     }
 }
