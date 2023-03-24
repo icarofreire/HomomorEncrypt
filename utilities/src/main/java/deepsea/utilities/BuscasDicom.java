@@ -22,14 +22,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import deepsea.utilities.SftpClient;
 import deepsea.utilities.Compress;
 import deepsea.utilities.JDBCConnect;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-// import java.time.LocalDateTime;
-// import java.time.format.DateTimeFormatter;
 
 /*\/ parse dicom; */
 import AC_DicomIO.AC_DcmStructure;
@@ -65,6 +64,8 @@ public final class BuscasDicom extends SftpClient {
     private final boolean verbose = true;
     /*\/ classe para comprimir arquivos; */
     private final Compress comp = new Compress();
+    /*\/ uma data predecessora em que os arquivos dicoms gerados devem ser coletados; */
+    private final String dataInicioPeriodo = "01/03/2023 00:00:00"; /* formato: dd/MM/yyyy HH:mm:ss */
 
     public BuscasDicom(String host, String username, String password) throws JSchException {
         super(host, username, password);
@@ -250,15 +251,9 @@ public final class BuscasDicom extends SftpClient {
                         values.add( (atributesDicom.containsKey((0x0020 << 16 | 0x0011))) ? (atributesDicom.get((0x0020 << 16 | 0x0011))[1]) : (null) ); // series_number;
                         values.add( file.getName() ); // path;
 
-                        // String studyDate = (atributesDicom.containsKey((0x0008 << 16 | 0x0020))) ? (atributesDicom.get((0x0008 << 16 | 0x0020))[1]) : (null);
-                        // if(studyDate != null){
-                        //     /* formato da data: "20221208"; ex: "20221209" */
-                        //     String ano = studyDate.substring(0, 4); // ano;
-                        //     String mes = studyDate.substring(4, 6); // mes;
-                        //     String dia = studyDate.substring(6, 8); // dia;
-                        //     System.out.println(">>" + studyDate);
-                        //     System.out.println(">>" + dia + "/" + mes + "/" + ano);
-                        // }
+                        String studyDate = (atributesDicom.containsKey((0x0008 << 16 | 0x0020))) ? (atributesDicom.get((0x0008 << 16 | 0x0020))[1]) : (null);
+                        /*\/ ; */
+                        // boolean regDicom = registrarDicomPorDataEstudo(studyDate);
 
                         if(banco.seConectado()){
                             banco.inserir(values, fileStream);
@@ -363,4 +358,32 @@ public final class BuscasDicom extends SftpClient {
     public void close() {
         super.close();
     }
+
+    private LocalDateTime stringToLocalDateTime(String data) {
+        String formatoTempo = "dd/MM/yyyy HH:mm:ss";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(formatoTempo);
+        LocalDateTime dateTime = LocalDateTime.parse(data, formatter);
+        return dateTime;
+    }
+
+    /*\/ análise da data de estudo do dicom para comparação com data predecessora estabelecida,
+    para coleta dos dicoms encontrados; */
+    private boolean registrarDicomPorDataEstudo(String studyDate) {
+        boolean ok = false;
+        if(studyDate != null){
+            /* ex formato da data: "20221208"; ex: "20221209" */
+            String ano = studyDate.substring(0, 4); // ano;
+            String mes = studyDate.substring(4, 6); // mes;
+            String dia = studyDate.substring(6, 8); // dia;
+            String data = dia + "/" + mes + "/" + ano + " 00:00:00";
+            LocalDateTime dataEstudoDicom = stringToLocalDateTime(data);
+            LocalDateTime dataInicioColeta = stringToLocalDateTime(dataInicioPeriodo);
+            /*\/ se data de estudo do dicom é posterior a data limite definida para coleta dos dicoms; */
+            if(dataEstudoDicom.isAfter(dataInicioColeta)){
+                ok = true;
+            }
+        }
+        return ok;
+    }
+    
 }

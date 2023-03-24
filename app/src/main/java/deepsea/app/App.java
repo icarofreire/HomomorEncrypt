@@ -15,13 +15,6 @@ import deepsea.utilities.FileOperationsMinio;
 import AC_DicomIO.AC_DcmStructure;
 import AC_DicomIO.AC_DicomReader;
 
-// import net.jpountz.lz4.LZ4Factory;
-// import net.jpountz.lz4.LZ4Compressor;
-
-import java.io.File;
-import deepsea.utilities.Compress;
-import java.io.RandomAccessFile;
-
 public class App {
     public static void main(String[] args) {
 
