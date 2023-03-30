@@ -45,7 +45,7 @@ public final class BuscasDicom extends SftpClient {
     /*\/ extensão do arquivo DICOM; */
     private final String extDICOM = ".dcm";
     /*\/ tipos de arquivos a procurar nas buscas em pasta e subpastas; */
-    private final List<String> filesTypes = Arrays.asList(extDICOM/*, ".ima"*/);
+    private final List<String> filesTypes = Arrays.asList(extDICOM);
     /*\/ pasta base onde a busca é iniciada; */
     private String pastaBase = null;
     /*\/ profundidade de subpastas em uma pasta encontrada na busca; */
@@ -124,7 +124,7 @@ public final class BuscasDicom extends SftpClient {
     }
 
     @SuppressWarnings("unchecked")
-    public void freeWalk(String remoteDir) throws SftpException, JSchException {
+    private void freeWalk(String remoteDir) throws SftpException, JSchException {
         if (getChannel() == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
@@ -161,6 +161,8 @@ public final class BuscasDicom extends SftpClient {
                     }
                 }
             }
+        }else{
+            System.out.println("** [Max profund]");
         }
     }
 
@@ -240,15 +242,15 @@ public final class BuscasDicom extends SftpClient {
                     LinkedHashMap<Integer, String[]> atributesDicom = parseDicom(file);
                     if(atributesDicom != null){
                         List<String> values = new ArrayList<>();
-                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0020))) ? (atributesDicom.get((0x0010 << 16 | 0x0020))[1]) : (null) ); // patient_id;
-                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0010))) ? (atributesDicom.get((0x0010 << 16 | 0x0010))[1]) : (null) ); // patient_name;
-                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x1010))) ? (atributesDicom.get((0x0010 << 16 | 0x1010))[1]) : (null) ); // patient_age;
-                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0030))) ? (atributesDicom.get((0x0010 << 16 | 0x0030))[1]) : (null) ); // patient_birth_date;
-                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0040))) ? (atributesDicom.get((0x0010 << 16 | 0x0040))[1]) : (null) ); // patient_sex;
-                        values.add( (atributesDicom.containsKey((0x0008 << 16 | 0x0080))) ? (atributesDicom.get((0x0008 << 16 | 0x0080))[1]) : (null) ); // institutio_name;
-                        values.add( (atributesDicom.containsKey((0x0008 << 16 | 0x0020))) ? (atributesDicom.get((0x0008 << 16 | 0x0020))[1]) : (null) ); // study_date;
-                        values.add( (atributesDicom.containsKey((0x0020 << 16 | 0x0010))) ? (atributesDicom.get((0x0020 << 16 | 0x0010))[1]) : (null) ); // study_id;
-                        values.add( (atributesDicom.containsKey((0x0020 << 16 | 0x0011))) ? (atributesDicom.get((0x0020 << 16 | 0x0011))[1]) : (null) ); // series_number;
+                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0020))) ? (atributesDicom.get((0x0010 << 16 | 0x0020))[1]) : (null) );
+                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0010))) ? (atributesDicom.get((0x0010 << 16 | 0x0010))[1]) : (null) );
+                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x1010))) ? (atributesDicom.get((0x0010 << 16 | 0x1010))[1]) : (null) );
+                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0030))) ? (atributesDicom.get((0x0010 << 16 | 0x0030))[1]) : (null) );
+                        values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0040))) ? (atributesDicom.get((0x0010 << 16 | 0x0040))[1]) : (null) );
+                        values.add( (atributesDicom.containsKey((0x0008 << 16 | 0x0080))) ? (atributesDicom.get((0x0008 << 16 | 0x0080))[1]) : (null) );
+                        values.add( (atributesDicom.containsKey((0x0008 << 16 | 0x0020))) ? (atributesDicom.get((0x0008 << 16 | 0x0020))[1]) : (null) );
+                        values.add( (atributesDicom.containsKey((0x0020 << 16 | 0x0010))) ? (atributesDicom.get((0x0020 << 16 | 0x0010))[1]) : (null) );
+                        values.add( (atributesDicom.containsKey((0x0020 << 16 | 0x0011))) ? (atributesDicom.get((0x0020 << 16 | 0x0011))[1]) : (null) );
                         values.add( file.getName() ); // path;
 
                         String studyDate = (atributesDicom.containsKey((0x0008 << 16 | 0x0020))) ? (atributesDicom.get((0x0008 << 16 | 0x0020))[1]) : (null);
@@ -288,27 +290,23 @@ public final class BuscasDicom extends SftpClient {
     }
 
     private List<String> consultarArquivosBanco() {
-        List<String> arqsInexis = null;
+        List<String> arqsInexis = new ArrayList<>();;
         final JDBCConnect con = new JDBCConnect();
-
-        List<String> listVeri = new ArrayList<>();
-        if(this.filesDicom.size() > maxDownloadFiles) {
-            /*\/ fatia das arquivos a serem enviados pelo limitador de arquvos baixados; */
-            List<String> part = this.filesDicom.subList(new Long(maxDownloadFiles).intValue(), this.filesDicom.size()-1);
-            listVeri = part;
-        }else{
-            listVeri = this.filesDicom;
-        }
-
         if(con.seConectado()){
             /*\/ arquivos inexistentes no banco; */
-            arqsInexis = listVeri.stream().filter(file -> {
-
+            long conDown = 0;
+            for(String file: this.filesDicom) {
                 String[] parts = file.split("\\/");
-                file = parts[parts.length-1];
+                String name_file = parts[parts.length-1];
 
-                return (con.consultarImagem(file) == 0);
-            }).collect(Collectors.toList());
+                if(con.consultarImagem(name_file) == 0){
+                    arqsInexis.add(file);
+                    conDown++;
+                }
+                if(conDown == maxDownloadFiles){
+                    break;
+                }
+            }
         }
         con.close();
         return arqsInexis;

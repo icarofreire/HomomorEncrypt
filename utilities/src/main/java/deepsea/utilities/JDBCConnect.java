@@ -192,8 +192,7 @@ public final class JDBCConnect {
 
     public String tamanhoBanco(){
         String count = null;
-        // final String query = "SELECT pg_size_pretty(pg_database_size('"+ banco +"'));";
-        final String query = "SELECT pg_size_pretty(pg_database_size('"+ banco +"')*1024);"; // in GB;
+        final String query = "SELECT pg_size_pretty(pg_database_size('"+ banco +"'));";
         try{
             ResultSet result = executeQuery(query);
             while(result.next()){
