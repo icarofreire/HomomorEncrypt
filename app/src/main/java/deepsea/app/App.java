@@ -18,9 +18,12 @@ import AC_DicomIO.AC_DicomReader;
 public class App {
     public static void main(String[] args) {
 
+        /*\/ iniciar schedule para buscas nos servidores; */
         // Scheduler sche = new Scheduler();
         // sche.ini();
 
+
+        /*\/ testes;; */
         // try{
         //     final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
         //     busca.getDiffLogAndServer("/home/storage-pacs");

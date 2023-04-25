@@ -367,7 +367,6 @@ public final class JDBCConnect {
             dcmStructure = dicomReader.getAttirbutes();
             if(dcmStructure != null){
                 attr = dcmStructure.getAttributes();
-                // HashMap<Integer, String[]> partags = dicomReader.getBitTagToHexParTag();
                 ok = (attr.size() > 0);
             }else{
                 /*\/ not dicom(.dcm/.ima) file; */

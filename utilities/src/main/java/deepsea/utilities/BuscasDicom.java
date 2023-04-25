@@ -251,13 +251,13 @@ public final class BuscasDicom extends SftpClient {
                         values.add( (atributesDicom.containsKey((0x0008 << 16 | 0x0020))) ? (atributesDicom.get((0x0008 << 16 | 0x0020))[1]) : (null) );
                         values.add( (atributesDicom.containsKey((0x0020 << 16 | 0x0010))) ? (atributesDicom.get((0x0020 << 16 | 0x0010))[1]) : (null) );
                         values.add( (atributesDicom.containsKey((0x0020 << 16 | 0x0011))) ? (atributesDicom.get((0x0020 << 16 | 0x0011))[1]) : (null) );
-                        values.add( file.getName() ); // path;
+                        values.add( file.getName() );
 
                         String studyDate = (atributesDicom.containsKey((0x0008 << 16 | 0x0020))) ? (atributesDicom.get((0x0008 << 16 | 0x0020))[1]) : (null);
                         /*\/ ; */
-                        // boolean regDicom = registrarDicomPorDataEstudo(studyDate);
+                        boolean regDicom = registrarDicomPorDataEstudo(studyDate);
 
-                        if(banco.seConectado()){
+                        if(banco.seConectado() && regDicom){
                             banco.inserir(values, fileStream);
                         }
                     }
@@ -277,7 +277,6 @@ public final class BuscasDicom extends SftpClient {
             dcmStructure = dicomReader.getAttirbutes();
             if(dcmStructure != null){
                 attr = dcmStructure.getAttributes();
-                // HashMap<Integer, String[]> partags = dicomReader.getBitTagToHexParTag();
             }else{
                 /*\/ not dicom(.dcm/.ima) file; */
                 // System.out.println(">> [NULL];");
@@ -290,7 +289,7 @@ public final class BuscasDicom extends SftpClient {
     }
 
     private List<String> consultarArquivosBanco() {
-        List<String> arqsInexis = new ArrayList<>();;
+        List<String> arqsInexis = new ArrayList<>();
         final JDBCConnect con = new JDBCConnect();
         if(con.seConectado()){
             /*\/ arquivos inexistentes no banco; */
