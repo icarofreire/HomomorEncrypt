@@ -61,11 +61,11 @@ public final class BuscasDicom extends SftpClient {
     /*\/ caminho completo dos arquivos dicoms encontrados no servidor; */
     private final List<String> filesDicom = new ArrayList<String>();
     /*\/ info processo de realização do procedimento; */
-    private final boolean verbose = true;
+    private final boolean verbose = false;
     /*\/ classe para comprimir arquivos; */
     private final Compress comp = new Compress();
     /*\/ uma data predecessora em que os arquivos dicoms gerados devem ser coletados; */
-    private final String dataInicioPeriodo = "01/03/2023 00:00:00"; /* formato: dd/MM/yyyy HH:mm:ss */
+    private final String dataInicioPeriodo = "01/05/2023 00:00:00"; /* formato: dd/MM/yyyy HH:mm:ss */
 
     public BuscasDicom(String host, String username, String password) throws JSchException {
         super(host, username, password);
@@ -329,28 +329,28 @@ public final class BuscasDicom extends SftpClient {
             }
         }
         this.close();
-        // this.createLogDadosDB();
+        this.createLogDadosDB();
         if(verbose) System.out.println(">> Fim;");
     }
 
-    // /*\/ criar log de dados do banco; */
-    // private void createLogDadosDB() {
-    //     final JDBCConnect banco = new JDBCConnect();
-    //     /*\/ date now(); */
-    //     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-    //     String formattedDateTime = LocalDateTime.now().format(formatter);
-    //     File logCheck = new File(arquivoLogDadosDB);
-    //     boolean append = logCheck.exists();
-    //     try {
-    //         FileWriter myWriter = new FileWriter(arquivoLogDadosDB, /*append*/ false);
-    //         myWriter.write(">> Tamanho DB: " + banco.tamanhoBanco() + "|" + formattedDateTime + ";\n");
-    //         myWriter.write(">> Número registros: " + banco.numeroRegistros() + "|" + formattedDateTime + ";\n");
-    //         myWriter.close();
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    //     banco.close();
-    // }
+    /*\/ criar log de dados do banco; */
+    private void createLogDadosDB() {
+        final JDBCConnect banco = new JDBCConnect();
+        /*\/ date now(); */
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        String formattedDateTime = LocalDateTime.now().format(formatter);
+        File logCheck = new File(arquivoLogDadosDB);
+        boolean append = logCheck.exists();
+        try {
+            FileWriter myWriter = new FileWriter(arquivoLogDadosDB, /*append*/ false);
+            myWriter.write(">> Tamanho DB: " + banco.tamanhoBanco() + "|" + formattedDateTime + ";\n");
+            myWriter.write(">> Número registros: " + banco.numeroRegistros() + "|" + formattedDateTime + ";\n");
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        banco.close();
+    }
 
     public void close() {
         super.close();

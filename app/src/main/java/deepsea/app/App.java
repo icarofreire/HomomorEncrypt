@@ -19,8 +19,8 @@ public class App {
     public static void main(String[] args) {
 
         /*\/ iniciar schedule para buscas nos servidores; */
-        // Scheduler sche = new Scheduler();
-        // sche.ini();
+        Scheduler sche = new Scheduler();
+        sche.ini();
 
 
         /*\/ testes;; */

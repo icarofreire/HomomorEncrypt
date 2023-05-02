@@ -60,8 +60,8 @@ public final class Scheduler {
         Task task = new Task();
         TimerTask timerTask = task;
         /*\/ execução repetida; */
-        timer.schedule(timerTask, 0L, tempoMedioMillis + task.secondsToMilliseconds(5));
-        // timer.schedule(timerTask, 0L, tempoMedioMillis + task.minutesToMilliseconds(10L));
+        // timer.schedule(timerTask, 0L, tempoMedioMillis + task.secondsToMilliseconds(5));
+        timer.schedule(timerTask, 0L, tempoMedioMillis + task.minutesToMilliseconds(5L));
     }
 
 }

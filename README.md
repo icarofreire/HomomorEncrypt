@@ -12,3 +12,8 @@ Compilar projeto:
 ```
 $ gradle build
 ```
+
+Local do arquivo .jar gerado:
+```
+$ DeepSea/app/build/libs/
+```
