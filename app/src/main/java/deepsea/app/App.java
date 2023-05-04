@@ -25,6 +25,15 @@ public class App {
         // Scheduler sche = new Scheduler();
         // sche.ini();
 
+        /*\/ iniciar schedule para multiplos servidores; */
+        // Vector<Server> servers = new Vector<Server>();
+        // servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
+        // servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
+        // servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
+
+        // Scheduler sche = new Scheduler();
+        // sche.iniParallel(servers);
+
 
         // /*\/ testes;; */
         // try{
@@ -51,15 +60,6 @@ public class App {
         //     System.out.println("T: " + minio.totalObjects());
         //     // minio.downloadObjectAndUnzipFileToInputStream("1.2.392.200036.9107.307.31409.20230222.225031.1066960.zip", "/home/icaro/Documentos/DeepSea");
         // }
-
-
-        Vector<Server> servers = new Vector<Server>();
-        servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
-        servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
-        servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
-
-        Scheduler sche = new Scheduler();
-        // sche.iniParallel(servers);
 
     }
 }

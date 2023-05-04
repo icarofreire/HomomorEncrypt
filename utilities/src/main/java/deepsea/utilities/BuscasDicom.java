@@ -296,6 +296,7 @@ public final class BuscasDicom extends SftpClient {
             if(verbose) System.out.println(">> Download + " + this.filesDicom.size() + " imagens;");
             this.downDicomsECompact(this.filesDicom);
         }
+        /*\/ fechar conexão remota; */
         this.close();
         this.createLogDadosDB();
         if(verbose) System.out.println(">> Fim;");
@@ -320,6 +321,7 @@ public final class BuscasDicom extends SftpClient {
         banco.close();
     }
 
+    /*\/ fechar conexão remota; */
     public final void closeCon() {
         super.close();
     }

@@ -39,7 +39,6 @@ public final class Scheduler {
         try{
             final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
             busca.getDiffLogAndServer("/home/storage-pacs");
-            busca.closeCon();
         }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
             e.printStackTrace();
         }
@@ -52,7 +51,6 @@ public final class Scheduler {
             try{
                 final BuscasDicom busca = new BuscasDicom(server.getHost(), server.getUsername(), server.getPassword());
                 busca.getDiffLogAndServer(server.getFolderBase());
-                // busca.closeCon();
             }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
                 e.printStackTrace();
             }
