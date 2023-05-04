@@ -65,7 +65,7 @@ public class SftpClient {
      * @param password password of remote
      * @throws JSchException If there is problem with credentials or connection
      */
-    public void authPassword(String password) throws JSchException {
+    public final void authPassword(String password) throws JSchException {
         session = jsch.getSession(username, host, port);
         naoUsarRSAkey();
         //disable known hosts checking
@@ -80,7 +80,7 @@ public class SftpClient {
     }
 
 
-    public void authKey(String keyPath, String pass) throws JSchException {
+    public final void authKey(String keyPath, String pass) throws JSchException {
         jsch.addIdentity(keyPath, pass);
         session = jsch.getSession(username, host, port);
         naoUsarRSAkey();
@@ -96,13 +96,13 @@ public class SftpClient {
 
     /*\/ configurar para não utilizar o ssh-key(rsa key);
     * Configure JSch to not use "StrictHostKeyChecking" (this introduces insecurities and should only be used for testing purposes); */
-    private void naoUsarRSAkey(){
+    private final void naoUsarRSAkey(){
         Properties config = new Properties();
         config.put("StrictHostKeyChecking", "no");
         session.setConfig(config);
     }
 
-    private String humanReadableByteCount(long bytes, boolean si) {
+    private final String humanReadableByteCount(long bytes, boolean si) {
         int unit = si ? 1000 : 1024;
         if (bytes < unit) return bytes + " B";
         int exp = (int) (Math.log(bytes) / Math.log(unit));
@@ -118,7 +118,7 @@ public class SftpClient {
      * @throws JSchException If there is any problem with connection
      */
     @SuppressWarnings("unchecked")
-    public void listFiles(String remoteDir) throws SftpException, JSchException {
+    public final void listFiles(String remoteDir) throws SftpException, JSchException {
         if (channel == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
@@ -138,7 +138,7 @@ public class SftpClient {
     }
 
     /*\/ vetor de conteúdos de um diretório; */
-    public Vector<ChannelSftp.LsEntry> vetorConteudos(String remoteDir){
+    public final Vector<ChannelSftp.LsEntry> vetorConteudos(String remoteDir){
         Vector<ChannelSftp.LsEntry> files = null;
         try{
             files = channel.ls(remoteDir);
@@ -155,7 +155,7 @@ public class SftpClient {
 
     /*\/ OBS: melhorar método para buscar recusivamente arquivos DICOM; */
     @SuppressWarnings("unchecked")
-    public void recursiveListFiles(String remoteDir) throws SftpException, JSchException {
+    public final void recursiveListFiles(String remoteDir) throws SftpException, JSchException {
         if (channel == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
@@ -193,7 +193,7 @@ public class SftpClient {
      * @throws JSchException If there is any problem with connection
      * @throws SftpException If there is any problem with uploading file permissions etc
      */
-    public void uploadFile(String localPath, String remotePath) throws JSchException, SftpException {
+    public final void uploadFile(String localPath, String remotePath) throws JSchException, SftpException {
         // System.out.printf("Uploading [%s] to [%s]...%n", localPath, remotePath);
         if (channel == null) {
             throw new IllegalArgumentException("Connection is not available");
@@ -208,7 +208,7 @@ public class SftpClient {
      * @param localPath  full path of where to save file locally
      * @throws SftpException If there is any problem with downloading file related permissions etc
      */
-    public void downloadFile(String remotePath, String localPath) throws SftpException {
+    public final void downloadFile(String remotePath, String localPath) throws SftpException {
         // System.out.printf("Downloading [%s] to [%s]...%n", remotePath, localPath);
         if (channel == null) {
             throw new IllegalArgumentException("Connection is not available");
@@ -222,7 +222,7 @@ public class SftpClient {
      * @param remoteFile full path of remote file
      * @throws SftpException If there is any problem with deleting file related to permissions etc
      */
-    public void delete(String remoteFile) throws SftpException {
+    public final void delete(String remoteFile) throws SftpException {
         // System.out.printf("Deleting [%s]...%n", remoteFile);
         if (channel == null) {
             throw new IllegalArgumentException("Connection is not available");
@@ -233,7 +233,7 @@ public class SftpClient {
     /**
      * Disconnect from remote
      */
-    public void close() {
+    public final void close() {
         if (channel != null) {
             channel.exit();
         }
@@ -242,13 +242,13 @@ public class SftpClient {
         }
     }
 
-    public void cd(String remoteDir) throws SftpException {
+    public final void cd(String remoteDir) throws SftpException {
         if (channel != null) {
             channel.cd(remoteDir);
         }
     }
 
-    public ChannelSftp getChannel() {
+    public final ChannelSftp getChannel() {
         return channel;
     }
 }

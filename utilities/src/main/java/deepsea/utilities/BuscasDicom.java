@@ -6,13 +6,8 @@ package deepsea.utilities;
 import com.jcraft.jsch.*;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.List;
-import java.util.Map;
 import java.util.LinkedHashMap;
-import java.util.HashMap;
 import java.util.Arrays;
-import java.util.Scanner;
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.stream.Collectors;
@@ -28,7 +23,6 @@ import deepsea.utilities.SftpClient;
 import deepsea.utilities.Compress;
 import deepsea.utilities.JDBCConnect;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /*\/ parse dicom; */
 import AC_DicomIO.AC_DcmStructure;
@@ -45,21 +39,21 @@ public final class BuscasDicom extends SftpClient {
     /*\/ extensão do arquivo DICOM; */
     private final String extDICOM = ".dcm";
     /*\/ tipos de arquivos a procurar nas buscas em pasta e subpastas; */
-    private final List<String> filesTypes = Arrays.asList(extDICOM);
+    private final Vector<String> filesTypes = new Vector(Arrays.asList(extDICOM));
     /*\/ pasta base onde a busca é iniciada; */
     private String pastaBase = null;
     /*\/ profundidade de subpastas em uma pasta encontrada na busca; */
     private final int maxSubpastas = 10;
     /*\/ pastas que possuem profundo grau de subpastas encontradas na busca; */
-    private final List<String> pastasEvit = new ArrayList<String>();
-    // private final List<String> pastasVisi = new ArrayList<String>();
+    private final Vector<String> pastasEvit = new Vector<String>();
+    /*\/ pastas já visitadas pelas buscas; */
     private final Set<String> pastasVisi = new HashSet<String>();
     /*\/ pasta para baixar os arquivos dicoms encontrados no servidor; */
     private String pastaDownDicoms = "Down";
     /*\/ log de dados do banco; */
     private final String arquivoLogDadosDB = "log-dados-DB";
     /*\/ caminho completo dos arquivos dicoms encontrados no servidor; */
-    private final List<String> filesDicom = new ArrayList<String>();
+    private final Vector<String> filesDicom = new Vector<String>();
     /*\/ info processo de realização do procedimento; */
     private final boolean verbose = false;
     /*\/ classe para comprimir arquivos; */
@@ -72,7 +66,7 @@ public final class BuscasDicom extends SftpClient {
     }
 
     /*\/ ; */
-    private String chequeDeepVoltaBaseMax(String caminho) {
+    private final String chequeDeepVoltaBaseMax(String caminho) {
         String cur = null;
         String[] blocos = caminho.split(java.io.File.separator);
         if(blocos.length > maxSubpastas){
@@ -85,12 +79,12 @@ public final class BuscasDicom extends SftpClient {
         return cur;
     }
 
-    private boolean seCaminhoEvitar(String caminho) {
-        List<String> fil = pastasEvit.stream().filter(f -> (f.indexOf(caminho) != -1)).collect(Collectors.toList());
+    private final boolean seCaminhoEvitar(String caminho) {
+        Vector<String> fil = pastasEvit.stream().filter(f -> (f.indexOf(caminho) != -1)).collect(Collectors.toCollection(Vector::new));
         return (fil.size() > 0);
     }
 
-    private String getPastaEvitar(String pastaBase, String caminho) {
+    private final String getPastaEvitar(String pastaBase, String caminho) {
         int ind = caminho.indexOf(pastaBase);
         if(ind != -1){
             return caminho.substring(0, caminho.indexOf(java.io.File.separator, pastaBase.length()+1));
@@ -99,7 +93,7 @@ public final class BuscasDicom extends SftpClient {
     }
 
     /*\/ se arquivo é do tipo DICOM; */
-    private boolean seDICOM(String arq){
+    private final boolean seDICOM(String arq){
         int lastp = arq.lastIndexOf('.');
         if(lastp != -1){
             String ext = arq.substring(lastp, arq.length()).toLowerCase();
@@ -109,7 +103,7 @@ public final class BuscasDicom extends SftpClient {
         }
     }
 
-    private int quantDicoms(String remoteDir){
+    private final int quantDicoms(String remoteDir){
         try{
             final Vector<ChannelSftp.LsEntry> files = getChannel().ls(remoteDir);
             if(!files.isEmpty()){
@@ -124,7 +118,7 @@ public final class BuscasDicom extends SftpClient {
     }
 
     @SuppressWarnings("unchecked")
-    private void freeWalk(String remoteDir, final JDBCConnect banco) throws SftpException, JSchException {
+    private final void freeWalk(String remoteDir, final JDBCConnect banco) throws SftpException, JSchException {
         if (getChannel() == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
@@ -169,7 +163,7 @@ public final class BuscasDicom extends SftpClient {
         }
     }
 
-    private void delDir(Path dir) {
+    private final void delDir(Path dir) {
         try{
             Files.walk(dir) // Traverse the file tree in depth-first order
             .sorted(java.util.Comparator.reverseOrder())
@@ -186,7 +180,7 @@ public final class BuscasDicom extends SftpClient {
     * criar log de checksum dos arquivos;
     * compactar arquivos dicoms;
     * */
-    private void downDicomsECompact(final List<String> caminhoDicomsDown) {
+    private final void downDicomsECompact(final Vector<String> caminhoDicomsDown) {
         if(caminhoDicomsDown.size() > 0){
             this.pastaDownDicoms += "-" + gerateRandomString(10);
             File dirBase = new File(this.pastaDownDicoms);
@@ -214,11 +208,7 @@ public final class BuscasDicom extends SftpClient {
         }
     }
 
-    private String nameFileWithoutExtension(String nameFile) {
-        return nameFile.substring(0, nameFile.lastIndexOf("."));
-    }
-
-    private InputStream streamCompactFile(File file) throws java.io.IOException {
+    private final InputStream streamCompactFile(File file) throws java.io.IOException {
         InputStream zipDicomStream = null;
         String absPath = file.getAbsolutePath();
         String compressFileName = absPath.replace(extDICOM, Compress.ext);
@@ -231,7 +221,7 @@ public final class BuscasDicom extends SftpClient {
         return zipDicomStream;
     }
 
-    private void connectAndSendFiles(File dirBase) {
+    private final void connectAndSendFiles(File dirBase) {
         try{
             if(dirBase.exists()){
                 if(verbose) System.out.println(">> Enviando imagens ao DB;");
@@ -245,7 +235,7 @@ public final class BuscasDicom extends SftpClient {
 
                     LinkedHashMap<Integer, String[]> atributesDicom = parseDicom(file);
                     if(atributesDicom != null){
-                        List<String> values = new ArrayList<>();
+                        Vector<String> values = new Vector<String>();
                         values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0020))) ? (atributesDicom.get((0x0010 << 16 | 0x0020))[1]) : (null) );
                         values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x0010))) ? (atributesDicom.get((0x0010 << 16 | 0x0010))[1]) : (null) );
                         values.add( (atributesDicom.containsKey((0x0010 << 16 | 0x1010))) ? (atributesDicom.get((0x0010 << 16 | 0x1010))[1]) : (null) );
@@ -272,7 +262,7 @@ public final class BuscasDicom extends SftpClient {
         }catch(java.io.IOException ex){ ex.printStackTrace(); }
     }
 
-    private LinkedHashMap<Integer, String[]> parseDicom(File dicom) {
+    private final LinkedHashMap<Integer, String[]> parseDicom(File dicom) {
         LinkedHashMap<Integer, String[]> attr = null;
         AC_DicomReader dicomReader = new AC_DicomReader();
         dicomReader.readDCMFile(dicom.getAbsolutePath());
@@ -296,7 +286,7 @@ public final class BuscasDicom extends SftpClient {
     a partir de uma pasta base do servidor;
     efetuar downloads apenas de arquivos não registrados no log de arquivos enviados; 
     * */
-    public void getDiffLogAndServer(String remoteDir) throws SftpException, JSchException {
+    public final void getDiffLogAndServer(String remoteDir) throws SftpException, JSchException {
         if(verbose) System.out.println(">> Realizando buscas no servidor;");
         final JDBCConnect banco = new JDBCConnect();
         this.freeWalk(remoteDir, banco);
@@ -312,7 +302,7 @@ public final class BuscasDicom extends SftpClient {
     }
 
     /*\/ criar log de dados do banco; */
-    private void createLogDadosDB() {
+    private final void createLogDadosDB() {
         final JDBCConnect banco = new JDBCConnect();
         /*\/ date now(); */
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
@@ -330,11 +320,11 @@ public final class BuscasDicom extends SftpClient {
         banco.close();
     }
 
-    public void close() {
+    public final void closeCon() {
         super.close();
     }
 
-    private LocalDateTime stringToLocalDateTime(String data) {
+    private final LocalDateTime stringToLocalDateTime(String data) {
         String formatoTempo = "dd/MM/yyyy HH:mm:ss";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(formatoTempo);
         LocalDateTime dateTime = LocalDateTime.parse(data, formatter);
@@ -343,7 +333,7 @@ public final class BuscasDicom extends SftpClient {
 
     /*\/ análise da data de estudo do dicom para comparação com data predecessora estabelecida,
     para coleta dos dicoms encontrados; */
-    private boolean registrarDicomPorDataEstudo(String studyDate) {
+    private final boolean registrarDicomPorDataEstudo(String studyDate) {
         boolean ok = false;
         if(studyDate != null){
             /* ex formato da data: "20221208"; ex: "20221209" */
@@ -361,7 +351,7 @@ public final class BuscasDicom extends SftpClient {
         return ok;
     }
 
-    private String gerateRandomString(int tam) {
+    private final String gerateRandomString(int tam) {
         return new java.util.Random().ints(tam, 97, 122).mapToObj(i -> String.valueOf((char)i)).collect(java.util.stream.Collectors.joining());
     }
     

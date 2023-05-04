@@ -10,6 +10,9 @@ import deepsea.utilities.TimeExecution;
 import deepsea.utilities.Scheduler;
 import deepsea.utilities.JDBCConnect;
 import deepsea.utilities.FileOperationsMinio;
+import deepsea.utilities.Server;
+
+import java.util.Vector;
 
 /*\/ parse dicom; */
 import AC_DicomIO.AC_DcmStructure;
@@ -19,11 +22,11 @@ public class App {
     public static void main(String[] args) {
 
         /*\/ iniciar schedule para buscas nos servidores; */
-        Scheduler sche = new Scheduler();
-        sche.ini();
+        // Scheduler sche = new Scheduler();
+        // sche.ini();
 
 
-        /*\/ testes;; */
+        // /*\/ testes;; */
         // try{
         //     final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
         //     busca.getDiffLogAndServer("/home/storage-pacs");
@@ -48,6 +51,15 @@ public class App {
         //     System.out.println("T: " + minio.totalObjects());
         //     // minio.downloadObjectAndUnzipFileToInputStream("1.2.392.200036.9107.307.31409.20230222.225031.1066960.zip", "/home/icaro/Documentos/DeepSea");
         // }
+
+
+        Vector<Server> servers = new Vector<Server>();
+        servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
+        servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
+        servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
+
+        Scheduler sche = new Scheduler();
+        // sche.iniParallel(servers);
 
     }
 }
