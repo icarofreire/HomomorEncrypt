@@ -55,7 +55,7 @@ public final class BuscasDicom extends SftpClient {
     // private final List<String> pastasVisi = new ArrayList<String>();
     private final Set<String> pastasVisi = new HashSet<String>();
     /*\/ pasta para baixar os arquivos dicoms encontrados no servidor; */
-    private final String pastaDownDicoms = "DownDicoms";
+    private String pastaDownDicoms = "Down";
     /*\/ log de dados do banco; */
     private final String arquivoLogDadosDB = "log-dados-DB";
     /*\/ caminho completo dos arquivos dicoms encontrados no servidor; */
@@ -185,6 +185,7 @@ public final class BuscasDicom extends SftpClient {
     * */
     private void downDicomsECompact(final List<String> caminhoDicomsDown) {
         if(caminhoDicomsDown.size() > 0){
+            this.pastaDownDicoms = "-" + gerateRandomString(10);
             File dirBase = new File(this.pastaDownDicoms);
             if(!dirBase.exists()){
                 dirBase.mkdir();
@@ -203,7 +204,7 @@ public final class BuscasDicom extends SftpClient {
                 }
             }
             if(!error){
-                connectAndSendFiles(dirBase, caminhoDicomsDown);
+                connectAndSendFiles(dirBase);
                 /*\/ deletar pasta com arquivos dicoms baixados do servidor; */
                 this.delDir(dirBase.toPath());
             }
@@ -227,7 +228,7 @@ public final class BuscasDicom extends SftpClient {
         return zipDicomStream;
     }
 
-    private void connectAndSendFiles(File dirBase, List<String> caminhoDicomsDown) {
+    private void connectAndSendFiles(File dirBase) {
         try{
             if(dirBase.exists()){
                 if(verbose) System.out.println(">> Enviando imagens ao DB;");
@@ -381,6 +382,10 @@ public final class BuscasDicom extends SftpClient {
             }
         }
         return ok;
+    }
+
+    private String gerateRandomString(int tam) {
+        return new java.util.Random().ints(tam, 97, 122).mapToObj(i -> String.valueOf((char)i)).collect(java.util.stream.Collectors.joining());
     }
     
 }
