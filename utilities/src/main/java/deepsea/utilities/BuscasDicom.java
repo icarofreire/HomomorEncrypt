@@ -124,7 +124,7 @@ public final class BuscasDicom extends SftpClient {
     }
 
     @SuppressWarnings("unchecked")
-    private void freeWalk(String remoteDir) throws SftpException, JSchException {
+    private void freeWalk(String remoteDir, final JDBCConnect banco) throws SftpException, JSchException {
         if (getChannel() == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
@@ -132,7 +132,7 @@ public final class BuscasDicom extends SftpClient {
         if(this.pastaBase == null){
             this.pastaBase = remoteDir;
         }
-        if(!this.pastasVisi.contains(remoteDir) && this.pastasVisi.size() < this.maxProfund){
+        if(!this.pastasVisi.contains(remoteDir) && this.pastasVisi.size() < this.maxProfund && (this.filesDicom.size() < maxDownloadFiles) ){
             cd(remoteDir);
             Vector<ChannelSftp.LsEntry> files = vetorConteudos(remoteDir);
             if(files != null && !files.isEmpty()){
@@ -152,17 +152,20 @@ public final class BuscasDicom extends SftpClient {
                                 // }
                                 String pastaRet = this.chequeDeepVoltaBaseMax(subPasta);
                                 if(pastaRet != null) subPasta = pastaRet;
-                                freeWalk(subPasta);
+                                freeWalk(subPasta, banco);
                             }
                         }
                     }else if(this.seDICOM(name)){
-                        String pathFile = remoteDir + java.io.File.separator + name;
-                        this.filesDicom.add(pathFile);
+                        /*\/ verificar se imagem existe no banco de dados; */
+                        if(banco.seConectado() && banco.consultarImagem(name) == 0){
+                            String pathFile = remoteDir + java.io.File.separator + name;
+                            this.filesDicom.add(pathFile);
+                        }
                     }
                 }
             }
         }else{
-            System.out.println("** [Max profund]");
+            if(verbose) System.out.println("** [Max profund]");
         }
     }
 
@@ -185,7 +188,7 @@ public final class BuscasDicom extends SftpClient {
     * */
     private void downDicomsECompact(final List<String> caminhoDicomsDown) {
         if(caminhoDicomsDown.size() > 0){
-            this.pastaDownDicoms = "-" + gerateRandomString(10);
+            this.pastaDownDicoms += "-" + gerateRandomString(10);
             File dirBase = new File(this.pastaDownDicoms);
             if(!dirBase.exists()){
                 dirBase.mkdir();
@@ -289,45 +292,19 @@ public final class BuscasDicom extends SftpClient {
         return attr;
     }
 
-    private List<String> consultarArquivosBanco() {
-        List<String> arqsInexis = new ArrayList<>();
-        final JDBCConnect con = new JDBCConnect();
-        if(con.seConectado()){
-            /*\/ arquivos inexistentes no banco; */
-            long conDown = 0;
-            for(String file: this.filesDicom) {
-                String[] parts = file.split("\\/");
-                String name_file = parts[parts.length-1];
-
-                if(con.consultarImagem(name_file) == 0){
-                    arqsInexis.add(file);
-                    conDown++;
-                }
-                if(conDown == maxDownloadFiles){
-                    break;
-                }
-            }
-        }
-        con.close();
-        return arqsInexis;
-    }
-
     /* \/ navegar recursivamente em busca de arquivos dicoms,
     a partir de uma pasta base do servidor;
     efetuar downloads apenas de arquivos não registrados no log de arquivos enviados; 
     * */
     public void getDiffLogAndServer(String remoteDir) throws SftpException, JSchException {
         if(verbose) System.out.println(">> Realizando buscas no servidor;");
-        this.freeWalk(remoteDir);
+        final JDBCConnect banco = new JDBCConnect();
+        this.freeWalk(remoteDir, banco);
+        banco.close();
 
         if(this.filesDicom.size() > 0){
-            System.out.println(this.filesDicom.size() + " imagens encontradas;");
-            /*\/ consultar os arquivos no banco, antes de realizar o download dos mesmos; */
-            List<String> inexistsFiles = this.consultarArquivosBanco();
-            if(inexistsFiles.size() > 0){
-                if(verbose) System.out.println(">> Download + " + inexistsFiles.size() + " imagens;");
-                this.downDicomsECompact(inexistsFiles);
-            }
+            if(verbose) System.out.println(">> Download + " + this.filesDicom.size() + " imagens;");
+            this.downDicomsECompact(this.filesDicom);
         }
         this.close();
         this.createLogDadosDB();
