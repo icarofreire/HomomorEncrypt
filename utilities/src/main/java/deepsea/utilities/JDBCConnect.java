@@ -30,7 +30,6 @@ import java.util.LinkedHashMap;
 import AC_DicomIO.AC_DcmStructure;
 import AC_DicomIO.AC_DicomReader;
 
-import deepsea.utilities.FileOperationsMinio;
 import deepsea.utilities.Compress;
 
 /**
@@ -377,84 +376,6 @@ public final class JDBCConnect {
             e.printStackTrace();
         }
         return ok;
-    }
-
-    // /* \/ escrever objeto por inteiro no MinIO; */
-    public void transferImagesToMinio(){
-        try{
-            FileOperationsMinio minio = new FileOperationsMinio("icaroteste");
-            if(!minio.getErrorConnection()){
-                long totalObjects = minio.totalObjects();
-                long totalRegistrosBanco = numeroRegistros();
-                if(totalRegistrosBanco > totalObjects){
-                    for(long id = totalObjects; id <= totalRegistrosBanco; id++)
-                    {
-                        long idImage = id;
-                        String nomeArquivoImagem = selectNameImage(idImage);
-                        if(nomeArquivoImagem != null){
-                            File file = new File(nomeArquivoImagem);
-                            OutputStream outStream = new FileOutputStream(file);
-                            InputStream initialStream = new ByteArrayInputStream(selectImage(idImage));
-                            initialStream.transferTo(outStream);
-
-                            if(!minio.ifObjectExists(file.getName())){
-                                if(minio.uploadObject(file.getName(), file.getAbsolutePath())){
-                                    // System.out.println( ">> UP Ok;" );
-                                }
-                            }else{
-                                // System.out.println( file.getName() + " já existe no minio;" );
-                            }
-                            file.delete();
-                        }
-                    }
-                }
-            }
-            // System.out.println( ">> MinIO Total: " + minio.totalObjects() );
-        }catch(IOException e){}
-    }
-
-    private String nameFileWithoutExtension(String nameFile) {
-        return nameFile.substring(0, nameFile.lastIndexOf("."));
-    }
-
-    public void transferImagesCompactToMinio() {
-        try{
-            Compress comp = new Compress();
-            FileOperationsMinio minio = new FileOperationsMinio("comp-dicoms");
-            if(!minio.getErrorConnection()){
-                long totalObjects = minio.totalObjects();
-                long totalRegistrosBanco = numeroRegistros();
-                if(totalRegistrosBanco > totalObjects){
-                    for(long id = totalObjects; id <= totalRegistrosBanco; id++)
-                    {
-                        long idImage = id;
-                        String nomeArquivoImagem = selectNameImage(idImage);
-                        if(nomeArquivoImagem != null){
-                            File file = new File(nomeArquivoImagem);
-                            OutputStream outStream = new FileOutputStream(file);
-                            InputStream initialStream = new ByteArrayInputStream(selectImage(idImage));
-                            initialStream.transferTo(outStream);
-
-                            String pathFileCompactedName = nameFileWithoutExtension(file.getName()) + Compress.ext;
-                            File fileDicomComp = new File(pathFileCompactedName);
-                            if(comp.compress(file.getAbsolutePath(), pathFileCompactedName)){
-                                /*\/ *** */
-                                if(!minio.ifObjectExists(fileDicomComp.getName())){
-                                    if(minio.uploadObject(fileDicomComp.getName(), fileDicomComp.getAbsolutePath())){
-                                        // System.out.println( ">> UP Ok;" );
-                                    }
-                                }else{
-                                    // System.out.println( file.getName() + " já existe no minio;" );
-                                }
-                            }
-                            fileDicomComp.delete();
-                            file.delete();
-                        }
-                    }
-                }
-            }
-            // System.out.println( ">> MinIO Total: " + minio.totalObjects() );
-        }catch(IOException e){}
     }
 
 }

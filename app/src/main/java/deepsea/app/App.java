@@ -9,7 +9,6 @@ import deepsea.utilities.BuscasDicom;
 import deepsea.utilities.TimeExecution;
 import deepsea.utilities.Scheduler;
 import deepsea.utilities.JDBCConnect;
-import deepsea.utilities.FileOperationsMinio;
 import deepsea.utilities.Server;
 
 import java.util.Vector;

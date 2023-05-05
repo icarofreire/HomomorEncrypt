@@ -18,9 +18,6 @@ dependencies {
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.5.4'
 
-    // https://mvnrepository.com/artifact/io.minio/minio
-    implementation group: 'io.minio', name: 'minio', version: '8.5.2'
-
     // https://mvnrepository.com/artifact/org.apache.commons/commons-compress
     implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.23.0'
 

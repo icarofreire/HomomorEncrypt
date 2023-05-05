@@ -52,7 +52,6 @@ public final class Scheduler {
         }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
             e.printStackTrace();
         }
-        // transferToMinIO();
     }
 
     /*\/ iniciar buscas no servidor de forma paralela; */
@@ -65,16 +64,6 @@ public final class Scheduler {
                 e.printStackTrace();
             }
         });
-        // transferToMinIO();
-    }
-
-    /*\/ imagens que são registradas no banco de dados,
-    também são transferidas ao servidor do MinIO; */
-    private void transferToMinIO() {
-        final JDBCConnect banco = new JDBCConnect();
-        /*\/ transferir imagens para o servidor MinIO; */
-        banco.transferImagesCompactToMinio();
-        banco.close();
     }
 
     public void ini() {
