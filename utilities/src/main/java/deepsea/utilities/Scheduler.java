@@ -14,10 +14,20 @@ import java.util.TimerTask;
  */
 public final class Scheduler {
 
+    private Vector<Server> servers;
+
+    /**
+	* Sets new value of servers
+	* @param
+	*/
+	public void setServers(Vector<Server> servers) {
+		this.servers = servers;
+	}
+
     private class Task extends TimerTask {
 
         private final void executarBuscasDicom() {
-            iniciarBuscas();
+            iniciarBuscasParallel();
         }
 
         public void run() {
@@ -46,7 +56,7 @@ public final class Scheduler {
     }
 
     /*\/ iniciar buscas no servidor de forma paralela; */
-    private final void iniciarBuscas(Vector<Server> servers) {
+    private final void iniciarBuscasParallel() {
         servers.parallelStream().forEach(server -> {
             try{
                 final BuscasDicom busca = new BuscasDicom(server.getHost(), server.getUsername(), server.getPassword());
@@ -82,9 +92,7 @@ public final class Scheduler {
         timer.schedule(timerTask, 0L, tempoMedioMillis + task.minutesToMilliseconds(5L));
     }
 
-    public void iniParallel(final Vector<Server> servers) {
-        iniciarBuscas(servers);
-
+    public void iniParallel() {
         Timer timer = new Timer();
         Task task = new Task();
         TimerTask timerTask = task;

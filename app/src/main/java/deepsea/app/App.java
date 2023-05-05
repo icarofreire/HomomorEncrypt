@@ -32,7 +32,8 @@ public class App {
         // servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
 
         // Scheduler sche = new Scheduler();
-        // sche.iniParallel(servers);
+        // sche.setServers(servers);
+        // sche.iniParallel();
 
 
         // /*\/ testes;; */
