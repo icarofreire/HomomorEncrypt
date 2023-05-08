@@ -25,13 +25,12 @@ public class App {
         // sche.ini();
 
         /*\/ iniciar schedule para multiplos servidores; */
-        // Vector<Server> servers = new Vector<Server>();
-        // servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
-        // servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
-        // servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
+        Vector<Server> servers = new Vector<Server>();
+        servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
+        servers.add(new Server("172.23.13.16", "suporte", "F0t012va@", "/storage-pacs"));
 
-        // Scheduler sche = new Scheduler();
-        // sche.setServers(servers);
+        Scheduler sche = new Scheduler();
+        sche.setServers(servers);
         // sche.iniParallel();
 
 
