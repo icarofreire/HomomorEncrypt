@@ -82,11 +82,15 @@ public final class Scheduler {
     }
 
     public void iniParallel() {
-        Timer timer = new Timer();
-        Task task = new Task();
-        TimerTask timerTask = task;
-        /*\/ execução repetida; */
-        timer.schedule(timerTask, 0L, task.minutesToMilliseconds(10L));
+        final JDBCConnect banco = new JDBCConnect();
+        if(banco.seConectado()){
+            Timer timer = new Timer();
+            Task task = new Task();
+            TimerTask timerTask = task;
+            /*\/ execução repetida; */
+            timer.schedule(timerTask, 0L, task.minutesToMilliseconds(10L));
+        }
+        banco.close();
     }
 
 }

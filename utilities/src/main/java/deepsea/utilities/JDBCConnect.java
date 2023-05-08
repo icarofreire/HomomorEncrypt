@@ -40,21 +40,10 @@ public final class JDBCConnect {
     private Statement stmt = null;
 
     /*\/ informações banco; */
-    // private final String ipPorta = "172.25.190.10:5432";
-    // private final String banco = "images_dicom";
-    // private final String usuario = "postgres";
-    // private final String senha = "PpSes2020!2019ProdPass";
-    
     private final String ipPorta = "172.25.190.10:5432";
     private final String banco = "compact_dicoms";
     private final String usuario = "postgres";
     private final String senha = "PpSes2020!2019ProdPass";
-
-    // private final String ipPorta = "localhost:5432";
-    // private final String banco = "galen";
-    // private final String usuario = "postgres";
-    // private final String senha = "postgres";
-
 
     public JDBCConnect(){
         try {

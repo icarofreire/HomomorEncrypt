@@ -31,7 +31,7 @@ public class App {
 
         Scheduler sche = new Scheduler();
         sche.setServers(servers);
-        // sche.iniParallel();
+        sche.iniParallel();
 
 
         // /*\/ testes;; */
@@ -40,24 +40,6 @@ public class App {
         //     busca.getDiffLogAndServer("/home/storage-pacs");
         // }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
         //     e.printStackTrace();
-        // }
-
-        // JDBCConnect banco = new JDBCConnect();
-        // banco.transferImagesToMinio();
-        // banco.transferImagesCompactToMinio();
-        // System.out.println("TAM: " + banco.tamanhoBanco());
-        // banco.close();
-
-        // JDBCConnect banco = new JDBCConnect();
-        // byte[] bytes = banco.getBytesImageByID(1);
-        // System.out.println("bytes: " + bytes.length);
-        // banco.close();
-
-        // FileOperationsMinio minio = new FileOperationsMinio("compact-dicoms");
-        // if(!minio.getErrorConnection()){
-        //     minio.listObjects();
-        //     System.out.println("T: " + minio.totalObjects());
-        //     // minio.downloadObjectAndUnzipFileToInputStream("1.2.392.200036.9107.307.31409.20230222.225031.1066960.zip", "/home/icaro/Documentos/DeepSea");
         // }
 
     }
