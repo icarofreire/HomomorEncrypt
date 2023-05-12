@@ -204,6 +204,10 @@ public final class BuscasDicom extends SftpClient {
                 connectAndSendFiles(dirBase);
                 /*\/ deletar pasta com arquivos dicoms baixados do servidor; */
                 this.delDir(dirBase.toPath());
+            }else{
+                /*\/ deletar pasta com arquivos dicoms baixados do servidor --
+                caso ocorra algum erro em baixar as imagens; */
+                this.delDir(dirBase.toPath());
             }
         }
     }
