@@ -5,7 +5,7 @@ package deepsea.utilities;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.List;
+import java.util.Vector;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
@@ -122,7 +122,7 @@ public final class JDBCConnect {
         return count;
     }
 
-    public boolean inserir(List<String> values, InputStream bytes){
+    public boolean inserir(Vector<String> values, InputStream bytes){
         boolean error = false;
         final String query =
         "INSERT INTO tb_images_dicom (" +

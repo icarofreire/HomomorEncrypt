@@ -3,7 +3,6 @@
  */
 package deepsea.app;
 
-import deepsea.list.LinkedList;
 
 import deepsea.utilities.BuscasDicom;
 import deepsea.utilities.TimeExecution;
