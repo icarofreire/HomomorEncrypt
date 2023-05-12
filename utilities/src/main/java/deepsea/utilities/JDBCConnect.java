@@ -31,6 +31,7 @@ import AC_DicomIO.AC_DcmStructure;
 import AC_DicomIO.AC_DicomReader;
 
 import deepsea.utilities.Compress;
+import deepsea.utilities.JDBCConnection;
 
 /**
  * 
@@ -225,8 +226,8 @@ public final class JDBCConnect {
         name_file character varying(255) NOT NULL
     );
     */
-    public String criarTabela(){
-        String count = null;
+    public boolean criarTabela(){
+        boolean ok = false;
         final String query =
         "CREATE TABLE public.tb_images_dicom ( \n" +
         "id bigint NOT NULL, \n" +
@@ -244,10 +245,37 @@ public final class JDBCConnect {
         ");";
         try{
             stmt.execute(query);
+            ok = true;
         }catch(SQLException e){
             e.printStackTrace();
         }
-        return count;
+        return ok;
+    }
+
+    public boolean criarTabela(Statement stmt){
+        boolean ok = false;
+        final String query =
+        "CREATE TABLE public.tb_images_dicom ( \n" +
+        "id bigint NOT NULL, \n" +
+        "dicom bytea NOT NULL, \n" +
+        "patient_id character varying(255) NOT NULL, \n" +
+        "patient_name character varying(255), \n" +
+        "patient_age character varying(255), \n" +
+        "patient_birth_date character varying(255), \n" +
+        "patient_sex character varying(255), \n" +
+        "institution_name character varying(255), \n" +
+        "study_date character varying(255), \n" +
+        "study_id character varying(255), \n" +
+        "series_number character varying(255), \n" +
+        "name_file character varying(255) NOT NULL \n" +
+        ");";
+        try{
+            stmt.execute(query);
+            ok = true;
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        return ok;
     }
 
     public void criarTabelaSeNaoExistir(){
@@ -365,6 +393,130 @@ public final class JDBCConnect {
             e.printStackTrace();
         }
         return ok;
+    }
+
+    public void createDBAndTable(String ipPorta, String usuario, String senha, String nomeBanco) {
+        final JDBCConnection con = new JDBCConnection();
+        /*\/ criar banco caso não exista; */
+        con.createDB(ipPorta, usuario, senha, nomeBanco);
+        con.createConnection(ipPorta, nomeBanco, usuario, senha);
+        if(con.seConectado()){
+            Statement statement = con.getStatement();
+
+            /*\/ verificar existência da tabela; */
+            boolean exists = false;
+            try{
+                String res = "";
+                String query = "SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename  = 'tb_images_dicom');";
+                ResultSet result = con.executeQuery(query);
+                while(result.next()){
+                    res = result.getString("exists");
+                }
+                if(res.equalsIgnoreCase("f") || res.equalsIgnoreCase("false")){
+                    exists = false;
+                }else{
+                    exists = true;
+                }
+            }catch(SQLException e){
+                e.printStackTrace();
+            }
+
+            /*\/ criar tabela caso a mesma não exista; */
+            if(!exists){
+                criarTabela(statement);
+            }
+        }
+        con.close();
+    }
+
+    /*\/ migrar dados; [--------------TESTAR---------] */
+    public boolean migrateTableImagens(final JDBCConnection con) {
+        boolean ok = false;
+        if(con.seConectado()){
+            /*\/ migrar dados; */
+            try{
+                String query = "SELECT * FROM public.tb_images_dicom;";
+                ResultSet result = executeQuery(query);
+                while(result.next()){
+                    long id = result.getLong("id");
+                    byte[] dicom = result.getBytes("dicom");
+                    String patient_id = result.getString("patient_id");
+                    String patient_name = result.getString("patient_name");
+                    String patient_age = result.getString("patient_age");
+                    String patient_birth_date = result.getString("patient_birth_date");
+                    String patient_sex = result.getString("patient_sex");
+                    String institution_name = result.getString("institution_name");
+                    String study_date = result.getString("study_date");
+                    String study_id = result.getString("study_id");
+                    String series_number = result.getString("series_number");
+                    String name_file = result.getString("name_file");
+
+                    String query_insert =
+                    "INSERT INTO tb_images_dicom (" +
+                    "id," +
+                    "dicom," +
+                    "patient_id," +
+                    "patient_name," +
+                    "patient_age," +
+                    "patient_birth_date," +
+                    "patient_sex," +
+                    "institution_name," +
+                    "study_date," +
+                    "study_id," +
+                    "series_number," +
+                    "name_file" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
+                    PreparedStatement ps = con.getConnection().prepareStatement(query_insert);
+                    int index = 1;
+                    ps.setLong(index, id);
+                    index++;
+                    InputStream dicomStream = new ByteArrayInputStream(dicom);
+                    ps.setBinaryStream(index, dicomStream);
+                    index++;
+                    ps.setString(index, patient_id);
+                    index++;
+                    ps.setString(index, patient_name);
+                    index++;
+                    ps.setString(index, patient_age);
+                    index++;
+                    ps.setString(index, patient_birth_date);
+                    index++;
+                    ps.setString(index, patient_sex);
+                    index++;
+                    ps.setString(index, institution_name);
+                    index++;
+                    ps.setString(index, study_date);
+                    index++;
+                    ps.setString(index, study_id);
+                    index++;
+                    ps.setString(index, series_number);
+                    index++;
+                    ps.setString(index, name_file);
+
+                    int retorno = ps.executeUpdate();
+                    if(retorno > 0){
+                        ok = true;
+                    }else{
+                        ok = false;
+                    }
+                }
+            }catch(SQLException e){
+                e.printStackTrace();
+            }
+        }
+        con.close();
+        return ok;
+    }
+
+    public void createDBAndMigrateTable(String ipPorta, String usuario, String senha, String nomeBanco) {
+        createDBAndTable(ipPorta, usuario, senha, nomeBanco);
+
+        final JDBCConnection con = new JDBCConnection();
+        con.createConnection(ipPorta, nomeBanco, usuario, senha);
+        migrateTableImagens(con);
+
+        con.close();
     }
 
 }

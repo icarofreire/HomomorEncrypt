@@ -9,6 +9,7 @@ import deepsea.utilities.TimeExecution;
 import deepsea.utilities.Scheduler;
 import deepsea.utilities.JDBCConnect;
 import deepsea.utilities.Server;
+import deepsea.utilities.JDBCConnection;
 
 import java.util.Vector;
 
@@ -28,9 +29,9 @@ public class App {
         servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
         servers.add(new Server("172.23.13.16", "suporte", "F0t012va@", "/storage-pacs"));
 
-        Scheduler sche = new Scheduler();
-        sche.setServers(servers);
-        sche.iniParallel();
+        // Scheduler sche = new Scheduler();
+        // sche.setServers(servers);
+        // sche.iniParallel();
 
 
         // /*\/ testes;; */
@@ -40,6 +41,14 @@ public class App {
         // }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
         //     e.printStackTrace();
         // }
+
+        // ;;; \/ testes \/ ;;;
+        // JDBCConnection bb = new JDBCConnection();
+        /*\/ criar banco caso não exista; */
+        // bb.createDB("172.25.190.10:5432", "postgres", "PpSes2020!2019ProdPass", "iva_teste");
+
+        JDBCConnect banco = new JDBCConnect();
+        // banco.createDBAndTable("172.25.190.10:5432", "postgres", "PpSes2020!2019ProdPass", "iva_teste");
 
     }
 }
