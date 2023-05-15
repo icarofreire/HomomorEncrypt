@@ -22,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import deepsea.utilities.SftpClient;
 import deepsea.utilities.Compress;
 import deepsea.utilities.DBOperations;
+import deepsea.utilities.MultiConnections;
 import java.nio.file.Path;
 
 /*\/ parse dicom; */
@@ -60,6 +61,8 @@ public final class BuscasDicom extends SftpClient {
     private final Compress comp = new Compress();
     /*\/ uma data predecessora em que os arquivos dicoms gerados devem ser coletados; */
     private final String dataInicioPeriodo = "01/05/2023 00:00:00"; /* formato: dd/MM/yyyy HH:mm:ss */
+    // /*\/ classe para multiplas conexões com bancos;*/
+    // private final MultiConnections multiConnections = new MultiConnections();
 
     public BuscasDicom(String host, String username, String password) throws JSchException {
         super(host, username, password);
@@ -259,7 +262,7 @@ public final class BuscasDicom extends SftpClient {
                             banco.inserir(values, fileStream);
 
                             // /*\/ inserir valores em multiplas conexões JDBC; */
-                            // banco.insertInServers(MultiConnections multiConnections, Vector<String> values, InputStream bytes);
+                            // banco.insertInServers(this.multiConnections, values, fileStream);
                         }
                     }
                 }
@@ -296,6 +299,8 @@ public final class BuscasDicom extends SftpClient {
     public final void scanServer(String remoteDir) throws SftpException, JSchException {
         if(verbose) System.out.println(">> Realizando buscas no servidor;");
         final DBOperations banco = new DBOperations();
+        // /*\/ criar multiplas conexões; */
+        // this.multiConnections.createImmediateMultiConnections();
         this.freeWalk(remoteDir, banco);
         banco.close();
 

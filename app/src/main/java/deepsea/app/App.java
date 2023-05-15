@@ -20,32 +20,16 @@ import AC_DicomIO.AC_DicomReader;
 public class App {
     public static void main(String[] args) {
 
-        /*\/ iniciar schedule para buscas nos servidores; */
-        // Scheduler sche = new Scheduler();
-        // sche.ini();
-
-        /*\/ iniciar schedule para multiplos servidores; */
+        /*\/ atribuir servidores pacs; */
         Vector<Server> servers = new Vector<Server>();
         servers.add(new Server("172.23.12.15", "root", "ZtO!@#762", "/home/storage-pacs"));
         servers.add(new Server("172.23.13.16", "suporte", "F0t012va@", "/storage-pacs"));
 
-        // Scheduler sche = new Scheduler();
-        // sche.setServers(servers);
+        Scheduler sche = new Scheduler();
+        sche.setServers(servers);
+        /*\/ iniciar schedule para multiplos servidores; */
         // sche.iniParallel();
 
-
-        // /*\/ testes;; */
-        // try{
-        //     final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
-        //     busca.scanServer("/home/storage-pacs");
-        // }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
-        //     e.printStackTrace();
-        // }
-
-        // ;;; \/ testes \/ ;;;
-        // JDBCConnection bb = new JDBCConnection();
-        /*\/ criar banco caso não exista; */
-        // bb.createDB("172.25.190.10:5432", "postgres", "PpSes2020!2019ProdPass", "iva_teste");
 
         // /*\/ testes de migrar dados; */
         // DBOperations banco = new DBOperations();
