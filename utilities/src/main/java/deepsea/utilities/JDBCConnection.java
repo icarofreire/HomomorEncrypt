@@ -20,13 +20,13 @@ public final class JDBCConnection {
     private Connection connection = null;
     private Statement statement = null;
 
-    public boolean createConnection(String ipPorta, String banco, String usuario, String senha){
+    public final boolean createConnection(String ipPorta, String banco, String usuario, String senha){
         boolean ok = false;
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-            System.out.println("Postgres driver not configured correctly.");
+            // System.out.println("Postgres driver not configured correctly.");
             ok = false;
         }
 
@@ -42,7 +42,7 @@ public final class JDBCConnection {
     }
 
     /*\/ criar banco caso não exista; */
-    public boolean createDB(String ipPorta, String usuario, String senha, String nomeBanco){
+    public final boolean createDB(String ipPorta, String usuario, String senha, String nomeBanco){
         boolean ok = false;
         try {
             Connection conn = DriverManager.getConnection("jdbc:postgresql://" + ipPorta + "/", usuario, senha);
@@ -67,11 +67,11 @@ public final class JDBCConnection {
             if(!exists){
                 String sql = "CREATE DATABASE " + nomeBanco;
                 stmt.executeUpdate(sql);
-                System.out.println("Database NOT exists;");
-                System.out.println("Database created successfully...");
+                // System.out.println("Database NOT exists;");
+                // System.out.println("Database created successfully...");
                 ok = true;
             }else{
-                System.out.println("Database exists;");
+                // System.out.println("Database exists;");
                 ok = false;
             }
             conn.close();
@@ -82,15 +82,15 @@ public final class JDBCConnection {
         return ok;
     }
 
-    public Connection getConnection(){
+    public final Connection getConnection(){
         return connection;
     }
 
-    public Statement getStatement(){
+    public final Statement getStatement(){
         return statement;
     }
 
-    public boolean seConectado(){
+    public final boolean seConectado(){
         try{
             return (!connection.isClosed());
         }catch(SQLException e){
@@ -99,7 +99,7 @@ public final class JDBCConnection {
         }
     }
 
-    public ResultSet executeQuery(String query){
+    public final ResultSet executeQuery(String query){
         ResultSet result = null;
         if(seConectado() && statement != null){
             try{
@@ -114,7 +114,7 @@ public final class JDBCConnection {
         return result;
     }
 
-    public void close(){
+    public final void close(){
         try{
             connection.close();
         }catch(SQLException e){

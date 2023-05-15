@@ -47,18 +47,10 @@ public final class JDBCConnect {
     private final String senha = "PpSes2020!2019ProdPass";
 
     public JDBCConnect(){
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            System.out.println("Postgres driver not configured correctly.");
-        }
-
-        try {
-            connection = DriverManager.getConnection("jdbc:postgresql://" + ipPorta + "/" + banco, usuario, senha);
-            stmt = connection.createStatement();
-        } catch (Exception e) {
-            e.printStackTrace();
+        final JDBCConnection con = new JDBCConnection();
+        if(con.createConnection(ipPorta, banco, usuario, senha)){
+            connection = con.getConnection();
+            stmt = con.getStatement();
         }
         criarTabelaSeNaoExistir();
     }
@@ -123,6 +115,10 @@ public final class JDBCConnect {
         return count;
     }
 
+    /**
+     * [FAZER] -> criar possibilidade de inserir em outros nós de conexão JDBC --
+     * inserir os mesmos dados em outros bancos inseridos em outros servidores;
+    */
     public boolean inserir(Vector<String> values, InputStream bytes){
         boolean error = false;
         final String query =
@@ -429,7 +425,7 @@ public final class JDBCConnect {
         con.close();
     }
 
-    /*\/ migrar dados; [--------------TESTAR---------] */
+    /*\/ migrar dados da tabela de imagens dicoms ; */
     public boolean migrateTableImagens(final JDBCConnection con) {
         boolean ok = false;
         if(con.seConectado()){
@@ -509,13 +505,12 @@ public final class JDBCConnect {
         return ok;
     }
 
+    /*\/ criar banco/tabela e migrar dados das imagens para outro servidor; */
     public void createDBAndMigrateTable(String ipPorta, String usuario, String senha, String nomeBanco) {
         createDBAndTable(ipPorta, usuario, senha, nomeBanco);
-
         final JDBCConnection con = new JDBCConnection();
         con.createConnection(ipPorta, nomeBanco, usuario, senha);
         migrateTableImagens(con);
-
         con.close();
     }
 

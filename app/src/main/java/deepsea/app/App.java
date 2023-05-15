@@ -47,8 +47,9 @@ public class App {
         /*\/ criar banco caso não exista; */
         // bb.createDB("172.25.190.10:5432", "postgres", "PpSes2020!2019ProdPass", "iva_teste");
 
-        JDBCConnect banco = new JDBCConnect();
-        // banco.createDBAndTable("172.25.190.10:5432", "postgres", "PpSes2020!2019ProdPass", "iva_teste");
+        // /*\/ testes de migrar dados; */
+        // JDBCConnect banco = new JDBCConnect();
+        // banco.createDBAndMigrateTable("172.25.190.10:5432", "postgres", "PpSes2020!2019ProdPass", "iva_teste");
 
     }
 }
