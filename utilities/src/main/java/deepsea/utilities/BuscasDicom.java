@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import deepsea.utilities.SftpClient;
 import deepsea.utilities.Compress;
-import deepsea.utilities.JDBCConnect;
+import deepsea.utilities.DBOperations;
 import java.nio.file.Path;
 
 /*\/ parse dicom; */
@@ -118,7 +118,7 @@ public final class BuscasDicom extends SftpClient {
     }
 
     @SuppressWarnings("unchecked")
-    private final void freeWalk(String remoteDir, final JDBCConnect banco) throws SftpException, JSchException {
+    private final void freeWalk(String remoteDir, final DBOperations banco) throws SftpException, JSchException {
         if (getChannel() == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
@@ -230,7 +230,7 @@ public final class BuscasDicom extends SftpClient {
             if(dirBase.exists()){
                 if(verbose) System.out.println(">> Enviando imagens ao DB;");
                 File[] arqsBaixados = dirBase.listFiles();
-                final JDBCConnect banco = new JDBCConnect();
+                final DBOperations banco = new DBOperations();
                 for(int i=0; i<arqsBaixados.length; i++){
                     File file = arqsBaixados[i];
                     InputStream fileStream = new FileInputStream(file);
@@ -257,6 +257,9 @@ public final class BuscasDicom extends SftpClient {
 
                         if(banco.seConectado() && regDicom){
                             banco.inserir(values, fileStream);
+
+                            // /*\/ inserir valores em multiplas conexões JDBC; */
+                            // banco.insertInServers(MultiConnections multiConnections, Vector<String> values, InputStream bytes);
                         }
                     }
                 }
@@ -290,9 +293,9 @@ public final class BuscasDicom extends SftpClient {
     a partir de uma pasta base do servidor;
     efetuar downloads apenas de arquivos não registrados no log de arquivos enviados; 
     * */
-    public final void getDiffLogAndServer(String remoteDir) throws SftpException, JSchException {
+    public final void scanServer(String remoteDir) throws SftpException, JSchException {
         if(verbose) System.out.println(">> Realizando buscas no servidor;");
-        final JDBCConnect banco = new JDBCConnect();
+        final DBOperations banco = new DBOperations();
         this.freeWalk(remoteDir, banco);
         banco.close();
 
@@ -308,7 +311,7 @@ public final class BuscasDicom extends SftpClient {
 
     /*\/ criar log de dados do banco; */
     private final void createLogDadosDB() {
-        final JDBCConnect banco = new JDBCConnect();
+        final DBOperations banco = new DBOperations();
         /*\/ date now(); */
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         String formattedDateTime = LocalDateTime.now().format(formatter);

@@ -4,7 +4,7 @@
 package deepsea.utilities;
 
 import deepsea.utilities.BuscasDicom;
-import deepsea.utilities.JDBCConnect;
+import deepsea.utilities.DBOperations;
 import java.util.Vector;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -48,7 +48,7 @@ public final class Scheduler {
     private final void iniciarBuscas() {
         try{
             final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
-            busca.getDiffLogAndServer("/home/storage-pacs");
+            busca.scanServer("/home/storage-pacs");
         }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
             e.printStackTrace();
         }
@@ -59,7 +59,7 @@ public final class Scheduler {
         servers.parallelStream().forEach(server -> {
             try{
                 final BuscasDicom busca = new BuscasDicom(server.getHost(), server.getUsername(), server.getPassword());
-                busca.getDiffLogAndServer(server.getFolderBase());
+                busca.scanServer(server.getFolderBase());
             }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
                 e.printStackTrace();
             }
@@ -82,7 +82,7 @@ public final class Scheduler {
     }
 
     public void iniParallel() {
-        final JDBCConnect banco = new JDBCConnect();
+        final DBOperations banco = new DBOperations();
         if(banco.seConectado()){
             Timer timer = new Timer();
             Task task = new Task();

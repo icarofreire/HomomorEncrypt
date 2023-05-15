@@ -34,9 +34,9 @@ import deepsea.utilities.Compress;
 import deepsea.utilities.JDBCConnection;
 
 /**
- * 
+ * classe de operações com bancos de dados;
  */
-public final class JDBCConnect {
+public final class DBOperations {
     private Connection connection = null;
     private Statement stmt = null;
 
@@ -46,7 +46,39 @@ public final class JDBCConnect {
     private final String usuario = "postgres";
     private final String senha = "PpSes2020!2019ProdPass";
 
-    public JDBCConnect(){
+    private final String query_insert =
+        "INSERT INTO tb_images_dicom (" +
+        "id," +
+        "dicom," +
+        "patient_id," +
+        "patient_name," +
+        "patient_age," +
+        "patient_birth_date," +
+        "patient_sex," +
+        "institution_name," +
+        "study_date," +
+        "study_id," +
+        "series_number," +
+        "name_file" +
+        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
+    private final String query_create_table =
+        "CREATE TABLE public.tb_images_dicom ( \n" +
+        "id bigint NOT NULL, \n" +
+        "dicom bytea NOT NULL, \n" +
+        "patient_id character varying(255) NOT NULL, \n" +
+        "patient_name character varying(255), \n" +
+        "patient_age character varying(255), \n" +
+        "patient_birth_date character varying(255), \n" +
+        "patient_sex character varying(255), \n" +
+        "institution_name character varying(255), \n" +
+        "study_date character varying(255), \n" +
+        "study_id character varying(255), \n" +
+        "series_number character varying(255), \n" +
+        "name_file character varying(255) NOT NULL \n" +
+        ");";
+
+    public DBOperations(){
         final JDBCConnection con = new JDBCConnection();
         if(con.createConnection(ipPorta, banco, usuario, senha)){
             connection = con.getConnection();
@@ -115,30 +147,11 @@ public final class JDBCConnect {
         return count;
     }
 
-    /**
-     * [FAZER] -> criar possibilidade de inserir em outros nós de conexão JDBC --
-     * inserir os mesmos dados em outros bancos inseridos em outros servidores;
-    */
     public boolean inserir(Vector<String> values, InputStream bytes){
-        boolean error = false;
-        final String query =
-        "INSERT INTO tb_images_dicom (" +
-        "id," +
-        "dicom," +
-        "patient_id," +
-        "patient_name," +
-        "patient_age," +
-        "patient_birth_date," +
-        "patient_sex," +
-        "institution_name," +
-        "study_date," +
-        "study_id," +
-        "series_number," +
-        "name_file" +
-        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        boolean ok = false;
         try{
             long ultimoId = ultimoIdTabela();
-            PreparedStatement ps = connection.prepareStatement(query);
+            PreparedStatement ps = connection.prepareStatement(query_insert);
             int index = 1;
             ps.setLong(index, ultimoId+1);
             index++;
@@ -150,15 +163,57 @@ public final class JDBCConnect {
 
             int retorno = ps.executeUpdate();
             if(retorno > 0){
-                error = false;
+                ok = true;
             }else{
-                error = true;
+                ok = false;
             }
         }catch(SQLException e){
-            error = true;
+            ok = false;
             e.printStackTrace();
         }
-        return error;
+        return ok;
+    }
+
+    /**
+     * inserir em outros nós de conexão JDBC --
+     * inserir os mesmos dados em outros bancos inseridos em outros servidores;
+    */
+    public boolean inserir(Connection connection, Vector<String> values, InputStream bytes){
+        boolean ok = false;
+        try{
+            long ultimoId = ultimoIdTabela();
+            PreparedStatement ps = connection.prepareStatement(query_insert);
+            int index = 1;
+            ps.setLong(index, ultimoId+1);
+            index++;
+            ps.setBinaryStream(index, bytes);
+            for(String v : values){
+                index++;
+                ps.setString(index, v);
+            }
+
+            int retorno = ps.executeUpdate();
+            if(retorno > 0){
+                ok = true;
+            }else{
+                ok = false;
+            }
+        }catch(SQLException e){
+            ok = false;
+            e.printStackTrace();
+        }
+        return ok;
+    }
+
+    /*\/ inserir valores em multiplas conexões; */
+    public void insertInServers(MultiConnections multiConnections, Vector<String> values, InputStream bytes){
+        Vector<JDBCConnection> connections = multiConnections.getConnections();
+        connections.parallelStream().forEach(con -> {
+            if(con.seConectado()){
+                inserir(con.getConnection(), values, bytes);
+            }
+            con.close();
+        });
     }
 
     public String seTabelaExiste(){
@@ -224,23 +279,8 @@ public final class JDBCConnect {
     */
     public boolean criarTabela(){
         boolean ok = false;
-        final String query =
-        "CREATE TABLE public.tb_images_dicom ( \n" +
-        "id bigint NOT NULL, \n" +
-        "dicom bytea NOT NULL, \n" +
-        "patient_id character varying(255) NOT NULL, \n" +
-        "patient_name character varying(255), \n" +
-        "patient_age character varying(255), \n" +
-        "patient_birth_date character varying(255), \n" +
-        "patient_sex character varying(255), \n" +
-        "institution_name character varying(255), \n" +
-        "study_date character varying(255), \n" +
-        "study_id character varying(255), \n" +
-        "series_number character varying(255), \n" +
-        "name_file character varying(255) NOT NULL \n" +
-        ");";
         try{
-            stmt.execute(query);
+            stmt.execute(query_create_table);
             ok = true;
         }catch(SQLException e){
             e.printStackTrace();
@@ -250,23 +290,8 @@ public final class JDBCConnect {
 
     public boolean criarTabela(Statement stmt){
         boolean ok = false;
-        final String query =
-        "CREATE TABLE public.tb_images_dicom ( \n" +
-        "id bigint NOT NULL, \n" +
-        "dicom bytea NOT NULL, \n" +
-        "patient_id character varying(255) NOT NULL, \n" +
-        "patient_name character varying(255), \n" +
-        "patient_age character varying(255), \n" +
-        "patient_birth_date character varying(255), \n" +
-        "patient_sex character varying(255), \n" +
-        "institution_name character varying(255), \n" +
-        "study_date character varying(255), \n" +
-        "study_id character varying(255), \n" +
-        "series_number character varying(255), \n" +
-        "name_file character varying(255) NOT NULL \n" +
-        ");";
         try{
-            stmt.execute(query);
+            stmt.execute(query_create_table);
             ok = true;
         }catch(SQLException e){
             e.printStackTrace();
@@ -446,22 +471,6 @@ public final class JDBCConnect {
                     String study_id = result.getString("study_id");
                     String series_number = result.getString("series_number");
                     String name_file = result.getString("name_file");
-
-                    String query_insert =
-                    "INSERT INTO tb_images_dicom (" +
-                    "id," +
-                    "dicom," +
-                    "patient_id," +
-                    "patient_name," +
-                    "patient_age," +
-                    "patient_birth_date," +
-                    "patient_sex," +
-                    "institution_name," +
-                    "study_date," +
-                    "study_id," +
-                    "series_number," +
-                    "name_file" +
-                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
                     PreparedStatement ps = con.getConnection().prepareStatement(query_insert);
                     int index = 1;

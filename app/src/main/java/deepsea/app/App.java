@@ -7,7 +7,7 @@ package deepsea.app;
 import deepsea.utilities.BuscasDicom;
 import deepsea.utilities.TimeExecution;
 import deepsea.utilities.Scheduler;
-import deepsea.utilities.JDBCConnect;
+import deepsea.utilities.DBOperations;
 import deepsea.utilities.Server;
 import deepsea.utilities.JDBCConnection;
 
@@ -37,7 +37,7 @@ public class App {
         // /*\/ testes;; */
         // try{
         //     final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
-        //     busca.getDiffLogAndServer("/home/storage-pacs");
+        //     busca.scanServer("/home/storage-pacs");
         // }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
         //     e.printStackTrace();
         // }
@@ -48,7 +48,7 @@ public class App {
         // bb.createDB("172.25.190.10:5432", "postgres", "PpSes2020!2019ProdPass", "iva_teste");
 
         // /*\/ testes de migrar dados; */
-        // JDBCConnect banco = new JDBCConnect();
+        // DBOperations banco = new DBOperations();
         // banco.createDBAndMigrateTable("172.25.190.10:5432", "postgres", "PpSes2020!2019ProdPass", "iva_teste");
 
     }
