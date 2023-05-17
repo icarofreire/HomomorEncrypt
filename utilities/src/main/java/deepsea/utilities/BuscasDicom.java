@@ -254,9 +254,9 @@ public final class BuscasDicom extends SftpClient {
                         values.add( file.getName() );
 
                         String studyDate = (atributesDicom.containsKey((0x0008 << 16 | 0x0020))) ? (atributesDicom.get((0x0008 << 16 | 0x0020))[1]) : (null);
-                        /*\/ ; */
+                        /*\/ verificar data de realização do dicom; */
                         boolean regDicom = registrarDicomPorDataEstudo(studyDate);
-                        /*\/ ; */
+                        /*\/ verificar se imagem não existe no banco; */
                         boolean imageNotExist = (banco.consultarImagem(file.getName()) == 0);
 
                         if(banco.seConectado() && imageNotExist && regDicom){
@@ -311,7 +311,7 @@ public final class BuscasDicom extends SftpClient {
         }
         /*\/ fechar conexão remota; */
         this.close();
-        this.createLogDadosDB();
+        // this.createLogDadosDB();
         if(verbose) System.out.println(">> Fim;");
     }
 
