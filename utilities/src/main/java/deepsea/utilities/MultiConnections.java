@@ -20,7 +20,7 @@ import deepsea.utilities.JDBCConnection;
  */
 public final class MultiConnections {
 
-    private Vector<JDBCConnection> connections = new Vector<JDBCConnection>();
+    private final Vector<JDBCConnection> connections = new Vector<JDBCConnection>();
 
     public void createImmediateMultiConnections() {
         /*\/ Ex add +1: */

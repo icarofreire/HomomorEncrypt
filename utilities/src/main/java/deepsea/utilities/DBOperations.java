@@ -32,6 +32,7 @@ import AC_DicomIO.AC_DicomReader;
 
 import deepsea.utilities.Compress;
 import deepsea.utilities.JDBCConnection;
+import deepsea.utilities.MultiConnections;
 
 /**
  * classe de operações com bancos de dados;
@@ -39,6 +40,12 @@ import deepsea.utilities.JDBCConnection;
 public final class DBOperations {
     private Connection connection = null;
     private Statement stmt = null;
+
+    /*\/ classe para multiplas conexões com bancos;*/
+    // private final MultiConnections multiConnections = new MultiConnections();
+
+    /*\/ multiplos nós de conexões com bancos;*/
+    // private final Vector<JDBCConnection> vconnections = multiConnections.getConnections();
 
     /*\/ informações banco; */
     private final String ipPorta = "172.25.190.10:5432";
@@ -208,7 +215,7 @@ public final class DBOperations {
     /*\/ inserir valores em multiplas conexões; */
     public void insertInServers(MultiConnections multiConnections, Vector<String> values, InputStream bytes){
         Vector<JDBCConnection> connections = multiConnections.getConnections();
-        connections.parallelStream().forEach(con -> {
+        connections.stream().forEach(con -> {
             if(con.seConectado()){
                 inserir(con.getConnection(), values, bytes);
             }

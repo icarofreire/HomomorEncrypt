@@ -50,7 +50,7 @@ public final class BuscasDicom extends SftpClient {
     /*\/ pastas já visitadas pelas buscas; */
     private final Set<String> pastasVisi = new HashSet<String>();
     /*\/ pasta para baixar os arquivos dicoms encontrados no servidor; */
-    private String pastaDownDicoms = "Down";
+    private final String pastaDownDicoms = "Down";
     /*\/ log de dados do banco; */
     private final String arquivoLogDadosDB = "log-dados-DB";
     /*\/ caminho completo dos arquivos dicoms encontrados no servidor; */
@@ -61,7 +61,7 @@ public final class BuscasDicom extends SftpClient {
     private final Compress comp = new Compress();
     /*\/ uma data predecessora em que os arquivos dicoms gerados devem ser coletados; */
     private final String dataInicioPeriodo = "01/05/2023 00:00:00"; /* formato: dd/MM/yyyy HH:mm:ss */
-    // /*\/ classe para multiplas conexões com bancos;*/
+    /*\/ classe para multiplas conexões com bancos;*/
     // private final MultiConnections multiConnections = new MultiConnections();
 
     public BuscasDicom(String host, String username, String password) throws JSchException {
@@ -185,8 +185,7 @@ public final class BuscasDicom extends SftpClient {
     * */
     private final void downDicomsECompact(final Vector<String> caminhoDicomsDown) {
         if(caminhoDicomsDown.size() > 0){
-            this.pastaDownDicoms += "-" + gerateRandomString(10);
-            File dirBase = new File(this.pastaDownDicoms);
+            File dirBase = new File(this.pastaDownDicoms + "-" + gerateRandomString(10));
             if(!dirBase.exists()){
                 dirBase.mkdir();
             }
@@ -257,11 +256,13 @@ public final class BuscasDicom extends SftpClient {
                         String studyDate = (atributesDicom.containsKey((0x0008 << 16 | 0x0020))) ? (atributesDicom.get((0x0008 << 16 | 0x0020))[1]) : (null);
                         /*\/ ; */
                         boolean regDicom = registrarDicomPorDataEstudo(studyDate);
+                        /*\/ ; */
+                        boolean imageNotExist = (banco.consultarImagem(file.getName()) == 0);
 
-                        if(banco.seConectado() && regDicom){
+                        if(banco.seConectado() && imageNotExist && regDicom){
                             banco.inserir(values, fileStream);
 
-                            // /*\/ inserir valores em multiplas conexões JDBC; */
+                            /*\/ inserir valores em multiplas conexões JDBC; */
                             // banco.insertInServers(this.multiConnections, values, fileStream);
                         }
                     }
