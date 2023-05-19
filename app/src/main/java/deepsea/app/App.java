@@ -10,6 +10,7 @@ import deepsea.utilities.Scheduler;
 import deepsea.utilities.DBOperations;
 import deepsea.utilities.Server;
 import deepsea.utilities.JDBCConnection;
+import deepsea.utilities.DataMigration;
 
 import java.util.Vector;
 
@@ -30,10 +31,6 @@ public class App {
         /*\/ iniciar schedule para multiplos servidores; */
         // sche.iniParallel();
 
-
-        // /*\/ testes de migrar dados; */
-        // DBOperations banco = new DBOperations();
-        // banco.createDBAndMigrateTable("172.25.190.10:5432", "postgres", "PpSes2020!2019ProdPass", "iva_teste");
 
     }
 }

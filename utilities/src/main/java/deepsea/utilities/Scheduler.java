@@ -5,6 +5,7 @@ package deepsea.utilities;
 
 import deepsea.utilities.BuscasDicom;
 import deepsea.utilities.DBOperations;
+import deepsea.utilities.DataMigration;
 import java.util.Vector;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,6 +29,7 @@ public final class Scheduler {
 
         private final void executarBuscasDicom() {
             iniciarBuscasParallel();
+            migrate();
         }
 
         public void run() {
@@ -64,6 +66,12 @@ public final class Scheduler {
                 e.printStackTrace();
             }
         });
+    }
+
+    /*\/ migrar dados; */
+    private final void migrate() {
+        final DataMigration mig = new DataMigration();
+        mig.migrate();
     }
 
     public void ini() {
