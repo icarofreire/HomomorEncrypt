@@ -74,21 +74,6 @@ public final class Scheduler {
         mig.migrate();
     }
 
-    public void ini() {
-        TimeExecution.inicio();
-        iniciarBuscas();
-        TimeExecution.fim();
-
-        long tempoMedioMillis = TimeExecution.getTimeDurationMilli();
-
-        Timer timer = new Timer();
-        Task task = new Task();
-        TimerTask timerTask = task;
-        /*\/ execução repetida; */
-        // timer.schedule(timerTask, 0L, tempoMedioMillis + task.secondsToMilliseconds(5));
-        timer.schedule(timerTask, 0L, tempoMedioMillis + task.minutesToMilliseconds(5L));
-    }
-
     public void iniParallel() {
         final DBOperations banco = new DBOperations();
         if(banco.seConectado()){

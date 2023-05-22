@@ -4,12 +4,12 @@
 package deepsea.utilities;
 
 import com.jcraft.jsch.*;
-import java.util.Properties;
 import java.util.Vector;
 import java.util.LinkedHashMap;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.io.File;
 import java.nio.file.Files;
@@ -48,7 +48,7 @@ public final class BuscasDicom extends SftpClient {
     /*\/ pastas que possuem profundo grau de subpastas encontradas na busca; */
     private final Vector<String> pastasEvit = new Vector<String>();
     /*\/ pastas já visitadas pelas buscas; */
-    private final Set<String> pastasVisi = new HashSet<String>();
+    private final Set<String> pastasVisi = Collections.synchronizedSet(new HashSet<String>());
     /*\/ pasta para baixar os arquivos dicoms encontrados no servidor; */
     private final String pastaDownDicoms = "Down";
     /*\/ log de dados do banco; */
@@ -125,7 +125,7 @@ public final class BuscasDicom extends SftpClient {
         if (getChannel() == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
-        // System.out.printf("Listing [%s]...%n", remoteDir);
+        if(verbose) System.out.printf("Listing [%s]...%n", remoteDir);
         if(this.pastaBase == null){
             this.pastaBase = remoteDir;
         }
