@@ -42,7 +42,7 @@ public final class DataMigration {
         ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
 
-    public void migrate() {
+    public synchronized void migrate() {
         final DBOperations banco = new DBOperations();
 
         /*\/ conexão do banco principal; */
@@ -80,7 +80,7 @@ public final class DataMigration {
     /*\/ migrar dados da tabela de imagens dicoms com datas de estudo antigas; */
     /*\/ mover dados da tabela de imagens dicoms, cuja data de estudo de um dicom 
     seja de N meses de realização anterior a data atual;*/
-    public boolean migrateOlderImagens(final JDBCConnection conDB1, final JDBCConnection conDB2) {
+    public synchronized boolean migrateOlderImagens(final JDBCConnection conDB1, final JDBCConnection conDB2) {
         boolean ok = false;
         if(conDB1.seConectado() && conDB2.seConectado()){
             Vector<Object[]> dates = new Vector<Object[]>();

@@ -121,7 +121,7 @@ public final class BuscasDicom extends SftpClient {
     }
 
     @SuppressWarnings("unchecked")
-    private final void freeWalk(String remoteDir, final DBOperations banco) throws SftpException, JSchException {
+    private final synchronized void freeWalk(String remoteDir, final DBOperations banco) throws SftpException, JSchException {
         if (getChannel() == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
@@ -183,7 +183,7 @@ public final class BuscasDicom extends SftpClient {
     * criar log de checksum dos arquivos;
     * compactar arquivos dicoms;
     * */
-    private final void downDicomsECompact(final Vector<String> caminhoDicomsDown) {
+    private final synchronized void downDicomsECompact(final Vector<String> caminhoDicomsDown) {
         if(caminhoDicomsDown.size() > 0){
             File dirBase = new File(this.pastaDownDicoms + "-" + gerateRandomString(10));
             if(!dirBase.exists()){
@@ -227,7 +227,7 @@ public final class BuscasDicom extends SftpClient {
         return zipDicomStream;
     }
 
-    private final void connectAndSendFiles(File dirBase) {
+    private final synchronized void connectAndSendFiles(File dirBase) {
         try{
             if(dirBase.exists()){
                 if(verbose) System.out.println(">> Enviando imagens ao DB;");
@@ -297,7 +297,7 @@ public final class BuscasDicom extends SftpClient {
     a partir de uma pasta base do servidor;
     efetuar downloads apenas de arquivos não registrados no log de arquivos enviados; 
     * */
-    public final void scanServer(String remoteDir) throws SftpException, JSchException {
+    public final synchronized void scanServer(String remoteDir) throws SftpException, JSchException {
         if(verbose) System.out.println(">> Realizando buscas no servidor;");
         final DBOperations banco = new DBOperations();
         // /*\/ criar multiplas conexões; */

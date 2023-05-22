@@ -46,16 +46,6 @@ public final class Scheduler {
         }
     }
 
-    /*\/ iniciar buscas no servidor; */
-    private final void iniciarBuscas() {
-        try{
-            final BuscasDicom busca = new BuscasDicom("172.23.12.15", "root", "ZtO!@#762");
-            busca.scanServer("/home/storage-pacs");
-        }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
-            e.printStackTrace();
-        }
-    }
-
     /*\/ iniciar buscas no servidor de forma paralela; */
     private final void iniciarBuscasParallel() {
         servers.parallelStream().forEach(server -> {
