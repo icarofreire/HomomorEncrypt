@@ -87,7 +87,7 @@ public final class DataMigration {
             /*\/ migrar dados antigos; */
             try{
                 String dataAnt = dataMesesPassados();
-                String query = "SELECT * FROM public.tb_images_dicom WHERE POSITION('"+ dataAnt +"' IN study_date) > 0;";
+                String query = "SELECT * FROM public.tb_images_dicom WHERE study_date::timestamp <= '" + dataAnt + "'::timestamp;";
                 ResultSet result = conDB1.executeQuery(query);
                 while(result.next()){
                     long id = result.getLong("id");
