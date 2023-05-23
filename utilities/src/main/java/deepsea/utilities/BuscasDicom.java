@@ -59,8 +59,6 @@ public final class BuscasDicom extends SftpClient {
     private final boolean verbose = false;
     /*\/ classe para comprimir arquivos; */
     private final Compress comp = new Compress();
-    /*\/ uma data predecessora em que os arquivos dicoms gerados devem ser coletados; */
-    private final String dataInicioPeriodo = "01/05/2023 00:00:00"; /* formato: dd/MM/yyyy HH:mm:ss */
     /*\/ classe para multiplas conexões com bancos;*/
     // private final MultiConnections multiConnections = new MultiConnections();
 
@@ -346,6 +344,13 @@ public final class BuscasDicom extends SftpClient {
         return dateTime;
     }
 
+    private final LocalDateTime dataInicioMesAtual() {
+        LocalDateTime actual = LocalDateTime.now();
+        int mes = actual.getMonthValue();
+        int ano = actual.getYear();
+        return LocalDateTime.of(ano, mes, 1, 0, 0, 0, 0);
+    }
+
     /*\/ análise da data de estudo do dicom para comparação com data predecessora estabelecida,
     para coleta dos dicoms encontrados; */
     private final boolean registrarDicomPorDataEstudo(String studyDate) {
@@ -357,9 +362,10 @@ public final class BuscasDicom extends SftpClient {
             String dia = studyDate.substring(6, 8); // dia;
             String data = dia + "/" + mes + "/" + ano + " 00:00:00";
             LocalDateTime dataEstudoDicom = stringToLocalDateTime(data);
-            LocalDateTime dataInicioColeta = stringToLocalDateTime(dataInicioPeriodo);
+            /*\/ data inicial do mês atual, em que os arquivos dicoms gerados devem ser coletados; */
+            LocalDateTime dataInicioColeta = dataInicioMesAtual();
             /*\/ se data de estudo do dicom é posterior a data limite definida para coleta dos dicoms; */
-            if(dataEstudoDicom.isAfter(dataInicioColeta)){
+            if(dataEstudoDicom.isAfter(dataInicioColeta) || dataEstudoDicom.isEqual(dataInicioColeta)){
                 ok = true;
             }
         }
