@@ -45,16 +45,29 @@ public final class DataMigration {
     public synchronized void migrate() {
         final DBOperations banco = new DBOperations();
 
+        /*\/ credenciais banco principal; */
+        final String ipPortaPri = "172.25.190.10:5432";
+        final String bancoPri = "compact_dicoms";
+        final String usuarioPri = "postgres";
+        final String senhaPri = "PpSes2020!2019ProdPass";
+
         /*\/ conexão do banco principal; */
         JDBCConnection conPri = new JDBCConnection();
-        conPri.createConnection("172.25.190.10:5432", "compact_dicoms", "postgres", "PpSes2020!2019ProdPass");
+        conPri.createConnection(ipPortaPri, bancoPri, usuarioPri, senhaPri);
+
+        /*\/ credenciais banco secundário; */
+        final String ipPortaSec = "172.25.190.10:5432";
+        final String bancoSec = "compact_old_dicoms";
+        final String usuarioSec = "postgres";
+        final String senhaSec = "PpSes2020!2019ProdPass";
 
         /*\/ conexão do banco secundário; */
         JDBCConnection conSec = new JDBCConnection();
-        banco.createDBAndTable("172.25.190.12:5432", "postgres", "PpSes2020!2019ProdPass", "compact_old_dicoms");
+        banco.createDBAndTable(ipPortaSec, usuarioSec, senhaSec, bancoSec);
         banco.close();
-        conSec.createConnection("172.25.190.12:5432", "compact_old_dicoms", "postgres", "PpSes2020!2019ProdPass");
+        conSec.createConnection(ipPortaSec, bancoSec, usuarioSec, senhaSec);
 
+        /*\/ migrar arquivos antigos; */
         migrateOlderImagens(conPri, conSec);
     }
 
