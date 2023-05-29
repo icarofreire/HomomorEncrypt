@@ -23,7 +23,7 @@ public final class DataMigration {
 
     /*\/ número de meses a serem analizados para comparar as datas
     de estudo dos dicoms sobre a data atual; */
-    private final long meses = 3L;
+    private final long meses = 2L;
 
     private final String query_insert =
         "INSERT INTO tb_images_dicom (" +
