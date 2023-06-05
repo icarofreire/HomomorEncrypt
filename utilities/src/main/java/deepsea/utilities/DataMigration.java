@@ -15,6 +15,7 @@ import java.sql.SQLException;
 
 import deepsea.utilities.JDBCConnection;
 import deepsea.utilities.DBOperations;
+import deepsea.utilities.DBConf;
 
 /*\/
 * 
@@ -45,21 +46,24 @@ public final class DataMigration {
     public synchronized void migrate() {
         final DBOperations banco = new DBOperations();
 
-        /*\/ credenciais banco principal; */
-        final String ipPortaPri = "172.25.190.10:5432";
-        final String bancoPri = "compact_dicoms";
-        final String usuarioPri = "postgres";
-        final String senhaPri = "PpSes2020!2019ProdPass";
+        /*\/ credenciais banco principal -- 
+        onde serão armazenados os arquivos mais recentes; */
+        final String ipPortaPri = DBConf.ipPortaPri;
+        final String bancoPri = DBConf.bancoPri;
+        final String usuarioPri = DBConf.usuarioPri;
+        final String senhaPri = DBConf.senhaPri;
 
         /*\/ conexão do banco principal; */
         JDBCConnection conPri = new JDBCConnection();
         conPri.createConnection(ipPortaPri, bancoPri, usuarioPri, senhaPri);
 
-        /*\/ credenciais banco secundário; */
-        final String ipPortaSec = "172.25.190.10:5432";
-        final String bancoSec = "compact_old_dicoms";
-        final String usuarioSec = "postgres";
-        final String senhaSec = "PpSes2020!2019ProdPass";
+        /*\/ credenciais banco secundário -- 
+        onde serão transferidos os arquivos antigos,
+        antecessores a N meses; */
+        final String ipPortaSec = DBConf.ipPortaSec;
+        final String bancoSec = DBConf.bancoSec;
+        final String usuarioSec = DBConf.usuarioSec;
+        final String senhaSec = DBConf.senhaSec;
 
         /*\/ conexão do banco secundário; */
         JDBCConnection conSec = new JDBCConnection();

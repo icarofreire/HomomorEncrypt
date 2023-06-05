@@ -33,6 +33,7 @@ import AC_DicomIO.AC_DicomReader;
 import deepsea.utilities.Compress;
 import deepsea.utilities.JDBCConnection;
 import deepsea.utilities.MultiConnections;
+import deepsea.utilities.DBConf;
 
 /**
  * classe de operações com bancos de dados;
@@ -47,11 +48,11 @@ public final class DBOperations {
     /*\/ multiplos nós de conexões com bancos;*/
     // private final Vector<JDBCConnection> vconnections = multiConnections.getConnections();
 
-    /*\/ informações banco; */
-    private final String ipPorta = "172.25.190.10:5432";
-    private final String banco = "compact_dicoms";
-    private final String usuario = "postgres";
-    private final String senha = "PpSes2020!2019ProdPass";
+    /*\/ informações banco principal; */
+    private final String ipPorta = DBConf.ipPortaPri;
+    private final String banco = DBConf.bancoPri;
+    private final String usuario = DBConf.usuarioPri;
+    private final String senha = DBConf.senhaPri;
 
     private final String query_insert =
         "INSERT INTO tb_images_dicom (" +
