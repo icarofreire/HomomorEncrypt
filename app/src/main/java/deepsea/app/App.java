@@ -14,6 +14,9 @@ import deepsea.utilities.DataMigration;
 import deepsea.utilities.ReadFileConf;
 
 import java.util.Vector;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 /*\/ parse dicom; */
 import AC_DicomIO.AC_DcmStructure;
@@ -41,6 +44,28 @@ public class App {
         /*\/ iniciar schedule para multiplos servidores; */
         // sche.iniParallel();
 
+
+        /*\/ opções de argumentos de linha de comando; */
+        if(args.length > 0 && args[0] != null){
+            /*\/ criar arquivo de configuração; */
+            if(args[0].equalsIgnoreCase("-c")){
+
+                File fileConf = new File("deepsea.json");
+                if(!fileConf.exists()){
+                    try {
+                        FileWriter myWriter = new FileWriter("deepsea.json", false);
+                        myWriter.write("{\n");
+                        myWriter.write("\t\"servers\":\n");
+                        myWriter.write("\t[\n");
+                        myWriter.write("\t\t{ \"host\": \"<ip-servidor>\", \"user\": \"<usuario>\", \"password\": \"<senha>\", \"folder\": \"</home/pasta-imagens>\" },\n");
+                        myWriter.write("\t\t{ \"host\": \"\", \"user\": \"\", \"password\": \"\", \"folder\": \"\" }\n");
+                        myWriter.write("\t]\n");
+                        myWriter.write("}\n");
+                        myWriter.close();
+                    } catch (IOException e) { e.printStackTrace(); }
+                }
+            }
+        }
 
     }
 }
