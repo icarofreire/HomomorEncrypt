@@ -19,6 +19,9 @@ public class AC_DicomReader {
 	private static final String DICM = "DICM";
 	//private static final int IMPLICIT_VR = 0x2D2D; // '--' 
 	//private AC_DicomDictionary..// m_DicomDic =  new AC_DicomDictionary();;
+
+	/*\/ tag de finalização do parse; */
+	private int tagBreak = 0;
 	
 	private String m_sFilePath = null;
 	private File m_sFile = null;
@@ -197,6 +200,10 @@ public class AC_DicomReader {
 				ouptutAttributes.setAttribute(tag,value);
 			}
 			
+			/*\/ interromper o parse na tag de finalização; */
+			if((tagBreak != 0) && (tag == tagBreak)){
+				break;
+			}
 
 			// logger.debug(String.format("TAG : %08x , Lengt : %d", tag,m_nElementLength));
 		}
@@ -614,6 +621,11 @@ public class AC_DicomReader {
 
 	public HashMap<Integer, String[]> getBitTagToHexParTag(){
 		return bitTagToHexParTag;
+	}
+
+	public void setTagBreak(int gru, int ele){
+		int oprTag = (gru << 16 | ele);
+		tagBreak = oprTag;
 	}
 
 }

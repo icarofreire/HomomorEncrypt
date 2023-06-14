@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import deepsea.utilities.LogFile;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * A simple SFTP client using JSCH http://www.jcraft.com/jsch/
@@ -214,6 +215,19 @@ public class SftpClient {
             throw new IllegalArgumentException("Connection is not available");
         }
         channel.get(remotePath, localPath);
+    }
+
+    /**
+     * Download a file from remote
+     *
+     * @param remotePath full path of remote file
+     * @throws SftpException If there is any problem with downloading file related permissions etc
+     */
+    public final InputStream downloadFile(String remotePath) throws SftpException {
+        if (channel == null) {
+            throw new IllegalArgumentException("Connection is not available");
+        }
+        return channel.get(remotePath);
     }
 
     /**

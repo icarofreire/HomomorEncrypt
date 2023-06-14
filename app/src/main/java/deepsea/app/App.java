@@ -4,13 +4,8 @@
 package deepsea.app;
 
 
-import deepsea.utilities.BuscasDicom;
-import deepsea.utilities.TimeExecution;
-import deepsea.utilities.Scheduler;
-import deepsea.utilities.DBOperations;
 import deepsea.utilities.Server;
-import deepsea.utilities.JDBCConnection;
-import deepsea.utilities.DataMigration;
+import deepsea.utilities.Scheduler;
 import deepsea.utilities.ReadFileConf;
 
 import java.util.Vector;
@@ -18,15 +13,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-/*\/ parse dicom; */
-import AC_DicomIO.AC_DcmStructure;
-import AC_DicomIO.AC_DicomReader;
 
-
-/**
- * // deepsea-de11000m36000ft
- * // seadeep-de11000m36000ft
- */
 public class App {
     public static void main(String[] args) {
 
@@ -42,14 +29,13 @@ public class App {
         Scheduler sche = new Scheduler();
         sche.setServers(servers);
         /*\/ iniciar schedule para multiplos servidores; */
-        // sche.iniParallel();
+        sche.iniParallel();
 
 
         /*\/ opções de argumentos de linha de comando; */
         if(args.length > 0 && args[0] != null){
             /*\/ criar arquivo de configuração; */
             if(args[0].equalsIgnoreCase("-c")){
-
                 File fileConf = new File("deepsea.json");
                 if(!fileConf.exists()){
                     try {
