@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
 import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.File;
 import java.nio.file.Files;
 import java.io.FileWriter;
@@ -24,9 +26,6 @@ import deepsea.utilities.Compress;
 import deepsea.utilities.DBOperations;
 import deepsea.utilities.MultiConnections;
 import java.nio.file.Path;
-
-import java.io.OutputStream;
-import java.io.FileOutputStream;
 
 /*\/ parse dicom; */
 import AC_DicomIO.AC_DcmStructure;
@@ -154,10 +153,11 @@ public final class BuscasDicom extends SftpClient {
                             }
                         }
                     }else if(this.seDICOM(name)){
-                        /*\/ análise do dicom; */
                         String pathFile = remoteDir + java.io.File.separator + name;
-                        boolean regDicom = remoteAnaliseDICOM(pathFile);
-                        if(regDicom){
+                        /*\/ análise da data de realização do dicom, pelo caminho do arquivo; */
+                        LocalDateTime studyDate = extractDataPath(pathFile);
+                        boolean presenteStudyDate = compararDataStudoComdataInicioMesAtual(studyDate);
+                        if(presenteStudyDate){
                             /*\/ verificar se imagem existe no banco de dados; */
                             if(banco.seConectado() && banco.consultarImagem(name) == 0){
                                 this.filesDicom.add(pathFile);
@@ -297,29 +297,6 @@ public final class BuscasDicom extends SftpClient {
         return attr;
     }
 
-    private final String parseIndexDicom(File dicom) {
-        final AC_DicomReader dicomReader = new AC_DicomReader();
-        dicomReader.readDCMFile(dicom);
-        String valueTag = null;
-        try {
-            /*\/ setar tag de interrupção; */
-            dicomReader.setTagBreak(0x0008, 0x0020);
-            final AC_DcmStructure dcmStructure = dicomReader.getAttirbutes();
-            if(dcmStructure != null){
-                final LinkedHashMap<Integer, String[]> attr = dcmStructure.getAttributes();
-                String studyDate = (attr.containsKey((0x0008 << 16 | 0x0020))) ? (attr.get((0x0008 << 16 | 0x0020))[1]) : (null);
-                valueTag = studyDate;
-            }else{
-                /*\/ not dicom(.dcm/.ima) file; */
-                // System.out.println(">> [NULL];");
-            }
-        } catch (java.io.IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return valueTag;
-    }
-
     /* \/ navegar recursivamente em busca de arquivos dicoms,
     a partir de uma pasta base do servidor;
     efetuar downloads apenas de arquivos não registrados no log de arquivos enviados; 
@@ -401,35 +378,32 @@ public final class BuscasDicom extends SftpClient {
         return ok;
     }
 
+    private final boolean compararDataStudoComdataInicioMesAtual(LocalDateTime dataEstudoDicom) {
+        boolean ok = false;
+        /*\/ data inicial do mês atual, em que os arquivos dicoms gerados devem ser coletados; */
+        LocalDateTime dataInicioColeta = dataInicioMesAtual();
+        /*\/ se data de estudo do dicom é posterior a data limite definida para coleta dos dicoms; */
+        if(dataEstudoDicom.isAfter(dataInicioColeta) || dataEstudoDicom.isEqual(dataInicioColeta)){
+            ok = true;
+        }
+        return ok;
+    }
+
     private final String gerateRandomString(int tam) {
         return new java.util.Random().ints(tam, 97, 122).mapToObj(i -> String.valueOf((char)i)).collect(java.util.stream.Collectors.joining());
     }
 
-    private final boolean remoteAnaliseDICOM(String pathFile) {
-        boolean regDicom = false;
-        InputStream remoteFile = null;
-        try{
-            remoteFile = downloadFile(pathFile);
-        }catch(SftpException e){
-            e.printStackTrace();
+    private final LocalDateTime extractDataPath(String filePath){
+        LocalDateTime dateTime = null;
+        Pattern pattern = Pattern.compile(".*(\\d{4}/\\d{2}/\\d{2}).*");
+        Matcher matcher = pattern.matcher(filePath);
+        if(matcher.matches()) {
+            String data = matcher.group(1) + " 00:00:00";
+            String formatoTempo = "yyyy/MM/dd HH:mm:ss";
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(formatoTempo);
+            dateTime = LocalDateTime.parse(data, formatter);
         }
-        if(remoteFile != null){
-            try{
-                File tempFileRemoteDCM = new File("remoteDICM" + gerateRandomString(20));
-                OutputStream outStream = new FileOutputStream(tempFileRemoteDCM);
-                outStream.write(remoteFile.readAllBytes());
-
-                if(tempFileRemoteDCM.exists()){
-                    String studyDate = parseIndexDicom(tempFileRemoteDCM);
-                    /*\/ verificar data de realização do dicom; */
-                    regDicom = registrarDicomPorDataEstudo(studyDate);
-                }
-                tempFileRemoteDCM.delete();
-            }catch(IOException e){
-                e.printStackTrace();
-            }
-        }
-        return regDicom;
+        return dateTime;
     }
     
 }
