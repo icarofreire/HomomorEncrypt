@@ -415,7 +415,7 @@ public final class BuscasDicom extends SftpClient {
         }
         if(remoteFile != null){
             try{
-                File tempFileRemoteDCM = new File("tempFileRemoteDICM" + gerateRandomString(10));
+                File tempFileRemoteDCM = new File("remoteDICM" + gerateRandomString(20));
                 OutputStream outStream = new FileOutputStream(tempFileRemoteDCM);
                 outStream.write(remoteFile.readAllBytes());
 
