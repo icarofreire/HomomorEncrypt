@@ -86,6 +86,8 @@ public final class DBOperations {
         "name_file character varying(255) NOT NULL \n" +
         ");";
 
+    private final String idx_table = "CREATE INDEX idx_patient_id ON public.tb_images_dicom(patient_id);";
+
     public DBOperations(){
         final JDBCConnection con = new JDBCConnection();
         if(con.createConnection(ipPorta, banco, usuario, senha)){
@@ -93,6 +95,10 @@ public final class DBOperations {
             stmt = con.getStatement();
         }
         criarTabelaSeNaoExistir();
+        /*\/ criar indice caso não exista; */
+        if(consultarIndiceTabela() == 0){
+            criarIndiceTabela();
+        }
     }
 
     public ResultSet executeQuery(String query){
@@ -130,6 +136,20 @@ public final class DBOperations {
     public long consultarImagem(String caminhoImagem){
         long count = 0;
         final String query = "SELECT count(*) AS count FROM public.tb_images_dicom t WHERE t.name_file = '" + caminhoImagem + "';";
+        try{
+            ResultSet result = executeQuery(query);
+            while(result.next()){
+                count = result.getLong("count");
+            }
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    public long consultarIndiceTabela(){
+        long count = 0;
+        final String query = "select count(indexname) from pg_indexes where tablename = 'tb_images_dicom' and indexname = 'idx_patient_id';";
         try{
             ResultSet result = executeQuery(query);
             while(result.next()){
@@ -313,6 +333,12 @@ public final class DBOperations {
             if(res.equalsIgnoreCase("f") || res.equalsIgnoreCase("false")){
                 criarTabela();
             }
+        }
+    }
+
+    public void criarIndiceTabela(){
+        if(seConectado()){
+            ResultSet result = executeQuery(idx_table);
         }
     }
 
