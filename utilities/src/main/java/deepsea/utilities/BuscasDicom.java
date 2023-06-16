@@ -63,12 +63,15 @@ public final class BuscasDicom extends SftpClient {
     private final Compress comp = new Compress();
     /*\/ classe para multiplas conexões com bancos;*/
     // private final MultiConnections multiConnections = new MultiConnections();
+    /*\/ vetor de datas de realização de cada imagem(obtida pelo caminho da imagem no servidor pacs); */
+    private final Vector<LocalDateTime> datesEvit = new Vector<LocalDateTime>();
 
     public BuscasDicom(String host, String username, String password) throws JSchException {
         super(host, username, password);
     }
 
-    /*\/ ; */
+    /*\/ verificar o número de subpastas de um caminho e inserir a pastabase do caminho para ser evitada,
+    caso o número de subpastas seja muito longo, para não prolongar profundidade de análise; */
     private final String chequeDeepVoltaBaseMax(String caminho) {
         String cur = null;
         String[] blocos = caminho.split(java.io.File.separator);
@@ -82,11 +85,37 @@ public final class BuscasDicom extends SftpClient {
         return cur;
     }
 
-    private final boolean seCaminhoEvitar(String caminho) {
-        Vector<String> fil = pastasEvit.stream().filter(f -> (f.indexOf(caminho) != -1)).collect(Collectors.toCollection(Vector::new));
-        return (fil.size() > 0);
+    private final void studyDateAvoid(LocalDateTime studyDate) {
+        if(!datesEvit.contains(studyDate)) datesEvit.add(studyDate);
     }
 
+    private final boolean seCaminhoEvitar(String remoteDir) {
+        /*\/ evitar caminho com data de realização antiga aos objetivos do projeto; */
+        boolean evitCaminhoDataStudo = false;
+        /*\/ evitar basta base com longo caminho de subpastas; */
+        boolean evitPasta = false;
+
+        /*\/ verificar se pasta base de um caminho remoto foi inserida como uma pasta a ser evitada no vetor,
+         * para evitar continuar a profundidade das buscas; */
+        if(!remoteDir.equals(this.pastaBase) && pastasEvit.size() > 0){
+            Vector<String> fil = pastasEvit.stream().filter(f -> (f.indexOf(remoteDir) != -1)).collect(Collectors.toCollection(Vector::new));
+            evitPasta = (fil.size() > 0);
+            // if(verbose && evitPasta) System.out.println("EVITAR PASTA:: " + remoteDir);
+        }
+
+        /*\/ verificar se data de realização da imagem(obtida pelo caminho remoto),
+        contém no vetor de datas a evitar sobre os objetivos do projeto; */
+        LocalDateTime studyDate = extractDataPath(remoteDir);
+        evitCaminhoDataStudo = datesEvit.contains(studyDate);
+        // if(verbose && evitCaminhoDataStudo) System.out.println("EVITAR:: " + studyDate);
+        return (evitCaminhoDataStudo || evitPasta);
+    }
+
+    /*\/ retorna o caminho da primeira basta após a pasta base, no caminho do arquivo; 
+    * Ex:
+    * entrada: /home/storage-pacs/HOSPITALDACRIANCA/CR/2022/12/22/1.2.392.200036.9107.307.31409.113140922122215165
+    * retorno: /home/storage-pacs/HOSPITALDACRIANCA
+    */
     private final String getPastaEvitar(String pastaBase, String caminho) {
         int ind = caminho.indexOf(pastaBase);
         if(ind != -1){
@@ -139,7 +168,7 @@ public final class BuscasDicom extends SftpClient {
 
                     /*\/ entrar em subpastas; */
                     if((!name.equals(".") && !name.equals("..")) && attrs.isDir()){
-                        if(!this.seCaminhoEvitar(name)){
+                        if(!this.seCaminhoEvitar(remoteDir)){
                             this.pastasVisi.add(remoteDir);
                             String subPasta = remoteDir + java.io.File.separator + name;
                             Vector<ChannelSftp.LsEntry> sub = vetorConteudos(subPasta);
@@ -162,6 +191,8 @@ public final class BuscasDicom extends SftpClient {
                             if(banco.seConectado() && banco.consultarImagem(name) == 0){
                                 this.filesDicom.add(pathFile);
                             }
+                        }else{
+                            studyDateAvoid(studyDate);
                         }
                     }
                 }
