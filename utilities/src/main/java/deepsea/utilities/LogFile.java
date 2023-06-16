@@ -32,14 +32,10 @@ public final class LogFile {
     private void criarObterLog(){
         try{
             File fileLog = java.nio.file.Paths.get(arquivoLog).toFile();
-            if(!fileLog.exists()){
-                this.handler = new FileHandler(arquivoLog, true);
-                this.handler.setFormatter(new SimpleFormatter());
-                this.logger = Logger.getLogger(nomeLog);
-                this.logger.addHandler(this.handler);
-            }else{
-                this.logger = Logger.getLogger(nomeLog);
-            }
+            this.handler = new FileHandler(arquivoLog, true);
+            this.handler.setFormatter(new SimpleFormatter());
+            this.logger = Logger.getLogger(nomeLog);
+            this.logger.addHandler(this.handler);
         }catch(IOException e){
             e.printStackTrace();
         }

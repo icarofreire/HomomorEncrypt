@@ -6,6 +6,7 @@ package deepsea.utilities;
 import deepsea.utilities.BuscasDicom;
 import deepsea.utilities.DBOperations;
 import deepsea.utilities.DataMigration;
+import deepsea.utilities.LogFile;
 import java.util.Vector;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -54,6 +55,9 @@ public final class Scheduler {
                 busca.scanServer(server.getFolderBase());
             }catch(com.jcraft.jsch.SftpException | com.jcraft.jsch.JSchException e){
                 e.printStackTrace();
+                String erro = "** ERRO de conexão por SSH com o servidor " + server.getUsername() + "@" + server.getHost() + ": " + e.getMessage();
+                LogFile logerror = new LogFile("error");
+                logerror.severe(erro);
             }
         });
     }

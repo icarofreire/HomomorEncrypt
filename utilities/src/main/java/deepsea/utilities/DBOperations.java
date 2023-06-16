@@ -34,6 +34,7 @@ import deepsea.utilities.Compress;
 import deepsea.utilities.JDBCConnection;
 import deepsea.utilities.MultiConnections;
 import deepsea.utilities.DBConf;
+import deepsea.utilities.LogFile;
 
 /**
  * classe de operações com bancos de dados;
@@ -93,6 +94,10 @@ public final class DBOperations {
         if(con.createConnection(ipPorta, banco, usuario, senha)){
             connection = con.getConnection();
             stmt = con.getStatement();
+        }else{
+            String erro = "** ERRO de conexão com o banco '" + banco + "', em '" + ipPorta + "', usuário '" + usuario + "';";
+            LogFile logerror = new LogFile("error");
+            logerror.severe(erro);
         }
         criarTabelaSeNaoExistir();
         /*\/ criar indice caso não exista; */

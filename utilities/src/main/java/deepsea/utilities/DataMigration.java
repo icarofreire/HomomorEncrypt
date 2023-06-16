@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import deepsea.utilities.JDBCConnection;
 import deepsea.utilities.DBOperations;
 import deepsea.utilities.DBConf;
+import deepsea.utilities.LogFile;
 
 /*\/
 * 
@@ -55,7 +56,12 @@ public final class DataMigration {
 
         /*\/ conexão do banco principal; */
         JDBCConnection conPri = new JDBCConnection();
-        conPri.createConnection(ipPortaPri, bancoPri, usuarioPri, senhaPri);
+        boolean conOk1 = conPri.createConnection(ipPortaPri, bancoPri, usuarioPri, senhaPri);
+        if(!conOk1){
+            String erro = "** ERRO de conexão com o banco '" + bancoPri + "', em '" + ipPortaPri + "', usuário '" + usuarioPri + "';";
+            LogFile logerror = new LogFile("error");
+            logerror.severe(erro);
+        }
 
         /*\/ credenciais banco secundário -- 
         onde serão transferidos os arquivos antigos,
@@ -69,10 +75,17 @@ public final class DataMigration {
         JDBCConnection conSec = new JDBCConnection();
         banco.createDBAndTable(ipPortaSec, usuarioSec, senhaSec, bancoSec);
         banco.close();
-        conSec.createConnection(ipPortaSec, bancoSec, usuarioSec, senhaSec);
+        boolean conOk2 = conSec.createConnection(ipPortaSec, bancoSec, usuarioSec, senhaSec);
+        if(!conOk2){
+            String erro = "** ERRO de conexão com o banco '" + bancoSec + "', em '" + ipPortaSec + "', usuário '" + usuarioSec + "';";
+            LogFile logerror = new LogFile("error");
+            logerror.severe(erro);
+        }
 
         /*\/ migrar arquivos antigos; */
-        migrateOlderImagens(conPri, conSec);
+        if(conOk1 && conOk2){
+            migrateOlderImagens(conPri, conSec);
+        }
     }
 
     /* obter data/hora atual; */
