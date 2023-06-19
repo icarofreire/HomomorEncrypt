@@ -195,6 +195,17 @@ public final class BuscasDicom extends SftpClient {
                             }else{
                                 studyDateAvoid(studyDate);
                             }
+                        }else{
+                            /*\/ não foi encontrada nenhuma data de realização da imagem no caminho
+                            da imagem encontrada(em forma de subpastas, ex: </unidadeX/ano/mes/dia/imagem>);
+                            Neste caso a imagem será adicionada para download, para verificação posterior
+                            da data de estudo do dicom, para verificar se a imagem está com a data de realização
+                            compatível com os objetivos do projeto.
+                            */
+                            /*\/ verificar se imagem existe no banco de dados; */
+                            if(banco.seConectado() && banco.consultarImagem(name) == 0){
+                                this.filesDicom.add(pathFile);
+                            }
                         }
                     }
                 }
