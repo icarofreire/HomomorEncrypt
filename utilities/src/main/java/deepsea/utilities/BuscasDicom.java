@@ -381,11 +381,18 @@ public final class BuscasDicom extends SftpClient {
         return dateTime;
     }
 
-    private final LocalDateTime dataInicioMesAtual() {
+    /*\/ decrementar em dias a data atual; */
+    private final LocalDateTime minusDaysActualLocalDateTime() {
+        long days = 3;
         LocalDateTime actual = LocalDateTime.now();
-        int mes = actual.getMonthValue();
-        int ano = actual.getYear();
-        return LocalDateTime.of(ano, mes, 1, 0, 0, 0, 0);
+        return actual.minusDays(days);
+    }
+
+    /*\/ retorna a data de inicio de realização das imagens a serem coletadas; */
+    private final LocalDateTime dataInicioColetaImagens() {
+        /*\/ somente serão buscadas as imagens que foram realizadas há N dias
+        anteriores a data atual de execução do programa; */
+        return minusDaysActualLocalDateTime();
     }
 
     /*\/ análise da data de estudo do dicom para comparação com data predecessora estabelecida,
@@ -400,7 +407,7 @@ public final class BuscasDicom extends SftpClient {
             String data = dia + "/" + mes + "/" + ano + " 00:00:00";
             LocalDateTime dataEstudoDicom = stringToLocalDateTime(data);
             /*\/ data inicial do mês atual, em que os arquivos dicoms gerados devem ser coletados; */
-            LocalDateTime dataInicioColeta = dataInicioMesAtual();
+            LocalDateTime dataInicioColeta = dataInicioColetaImagens();
             /*\/ se data de estudo do dicom é posterior a data limite definida para coleta dos dicoms; */
             if(dataEstudoDicom.isAfter(dataInicioColeta) || dataEstudoDicom.isEqual(dataInicioColeta)){
                 ok = true;
@@ -412,7 +419,7 @@ public final class BuscasDicom extends SftpClient {
     private final boolean compararDataStudoComdataInicioMesAtual(LocalDateTime dataEstudoDicom) {
         boolean ok = false;
         /*\/ data inicial do mês atual, em que os arquivos dicoms gerados devem ser coletados; */
-        LocalDateTime dataInicioColeta = dataInicioMesAtual();
+        LocalDateTime dataInicioColeta = dataInicioColetaImagens();
         /*\/ se data de estudo do dicom é posterior a data limite definida para coleta dos dicoms; */
         if(dataEstudoDicom.isAfter(dataInicioColeta) || dataEstudoDicom.isEqual(dataInicioColeta)){
             ok = true;
