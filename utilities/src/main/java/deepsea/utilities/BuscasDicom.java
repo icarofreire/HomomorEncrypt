@@ -185,14 +185,16 @@ public final class BuscasDicom extends SftpClient {
                         String pathFile = remoteDir + java.io.File.separator + name;
                         /*\/ análise da data de realização do dicom, pelo caminho do arquivo; */
                         LocalDateTime studyDate = extractDataPath(pathFile);
-                        boolean presenteStudyDate = compararDataStudoComdataInicioMesAtual(studyDate);
-                        if(presenteStudyDate){
-                            /*\/ verificar se imagem existe no banco de dados; */
-                            if(banco.seConectado() && banco.consultarImagem(name) == 0){
-                                this.filesDicom.add(pathFile);
+                        if(studyDate != null){
+                            boolean presenteStudyDate = compararDataStudoComdataInicioMesAtual(studyDate);
+                            if(presenteStudyDate){
+                                /*\/ verificar se imagem existe no banco de dados; */
+                                if(banco.seConectado() && banco.consultarImagem(name) == 0){
+                                    this.filesDicom.add(pathFile);
+                                }
+                            }else{
+                                studyDateAvoid(studyDate);
                             }
-                        }else{
-                            studyDateAvoid(studyDate);
                         }
                     }
                 }
