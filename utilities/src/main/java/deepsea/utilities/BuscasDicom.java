@@ -25,6 +25,7 @@ import deepsea.utilities.SftpClient;
 import deepsea.utilities.Compress;
 import deepsea.utilities.DBOperations;
 import deepsea.utilities.MultiConnections;
+import deepsea.utilities.LogEvitFile;
 import java.nio.file.Path;
 
 /*\/ parse dicom; */
@@ -65,9 +66,12 @@ public final class BuscasDicom extends SftpClient {
     // private final MultiConnections multiConnections = new MultiConnections();
     /*\/ vetor de datas de realização de cada imagem(obtida pelo caminho da imagem no servidor pacs); */
     private final Vector<LocalDateTime> datesEvit = new Vector<LocalDateTime>();
+    /*\/ operações com arquivos inválidos encontrados na busca, através de log; */
+    private final LogEvitFile logEvitFile = new LogEvitFile();
 
     public BuscasDicom(String host, String username, String password) throws JSchException {
         super(host, username, password);
+        logEvitFile.setHost(host);
     }
 
     /*\/ verificar o número de subpastas de um caminho e inserir a pastabase do caminho para ser evitada,
@@ -183,28 +187,33 @@ public final class BuscasDicom extends SftpClient {
                         }
                     }else if(this.seDICOM(name)){
                         String pathFile = remoteDir + java.io.File.separator + name;
-                        /*\/ análise da data de realização do dicom, pelo caminho do arquivo; */
-                        LocalDateTime studyDate = extractDataPath(pathFile);
-                        if(studyDate != null){
-                            boolean presenteStudyDate = compararDataStudoComdataInicioMesAtual(studyDate);
-                            if(presenteStudyDate){
+
+                        /*\/ se nome de arquivo e host estão listados no log de arquivos a serem evitados; */
+                        boolean evitFile = logEvitFile.seContemArquivoInv(name);
+                        if(!evitFile){
+                            /*\/ análise da data de realização do dicom, pelo caminho do arquivo; */
+                            LocalDateTime studyDate = extractDataPath(pathFile);
+                            if(studyDate != null){
+                                boolean presenteStudyDate = compararDataStudoComdataInicioMesAtual(studyDate);
+                                if(presenteStudyDate){
+                                    /*\/ verificar se imagem existe no banco de dados; */
+                                    if(banco.seConectado() && banco.consultarImagem(name) == 0){
+                                        this.filesDicom.add(pathFile);
+                                    }
+                                }else{
+                                    studyDateAvoid(studyDate);
+                                }
+                            }else{
+                                /*\/ não foi encontrada nenhuma data de realização da imagem no caminho
+                                da imagem encontrada(em forma de subpastas, ex: </unidadeX/ano/mes/dia/imagem>);
+                                Neste caso a imagem será adicionada para download, para verificação posterior
+                                da data de estudo do dicom, para verificar se a imagem está com a data de realização
+                                compatível com os objetivos do projeto.
+                                */
                                 /*\/ verificar se imagem existe no banco de dados; */
                                 if(banco.seConectado() && banco.consultarImagem(name) == 0){
                                     this.filesDicom.add(pathFile);
                                 }
-                            }else{
-                                studyDateAvoid(studyDate);
-                            }
-                        }else{
-                            /*\/ não foi encontrada nenhuma data de realização da imagem no caminho
-                            da imagem encontrada(em forma de subpastas, ex: </unidadeX/ano/mes/dia/imagem>);
-                            Neste caso a imagem será adicionada para download, para verificação posterior
-                            da data de estudo do dicom, para verificar se a imagem está com a data de realização
-                            compatível com os objetivos do projeto.
-                            */
-                            /*\/ verificar se imagem existe no banco de dados; */
-                            if(banco.seConectado() && banco.consultarImagem(name) == 0){
-                                this.filesDicom.add(pathFile);
                             }
                         }
                     }
@@ -314,6 +323,11 @@ public final class BuscasDicom extends SftpClient {
                             /*\/ inserir valores em multiplas conexões JDBC; */
                             // banco.insertInServers(this.multiConnections, values, fileStream);
                         }
+                        /*\/ registrar num log os arquivos inválidos; */
+                        if(!regDicom){
+                            String descriptInvFile = file.getName() + ":" + logEvitFile.getHost();
+                            logEvitFile.createLogInvFiles(descriptInvFile);
+                        }
                     }
                 }
                 if(verbose) System.out.println(">> Tamanho DB: " + banco.tamanhoBanco());
@@ -348,6 +362,7 @@ public final class BuscasDicom extends SftpClient {
     public final synchronized void scanServer(String remoteDir) throws SftpException, JSchException {
         if(verbose) System.out.println(">> Realizando buscas no servidor;");
         final DBOperations banco = new DBOperations();
+        logEvitFile.readInvFiles();
         // /*\/ criar multiplas conexões; */
         // this.multiConnections.createImmediateMultiConnections();
         this.freeWalk(remoteDir, banco);
