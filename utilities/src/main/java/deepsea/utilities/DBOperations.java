@@ -381,6 +381,8 @@ public final class DBOperations {
             OutputStream outStream = new FileOutputStream(targetFile);
             InputStream initialStream = new ByteArrayInputStream(selectImage(300));
             initialStream.transferTo(outStream);
+            outStream.close();
+            initialStream.close();
             if(parseDicom(targetFile)){
                 System.out.println( ">> DICOM OK;" );
             }else{
@@ -414,6 +416,8 @@ public final class DBOperations {
             OutputStream outStream = new FileOutputStream(targetFile);
             InputStream initialStream = new ByteArrayInputStream(selectImage(id));
             initialStream.transferTo(outStream);
+            outStream.close();
+            initialStream.close();
 
             /*\/ descompactar no mesmo local que o arquivo; */
             comp.decompress(targetFile.getAbsolutePath(), targetFile.getAbsolutePath().replace(Compress.ext, ".dcm"));
