@@ -24,13 +24,14 @@ public class App {
         Scheduler sche = new Scheduler();
         sche.setServers(servers);
         /*\/ iniciar schedule para multiplos servidores; */
-        sche.iniParallel();
-
+        if(args.length == 0 && conf.seArqConfExists()) {
+            sche.iniParallel();
+        }
 
         /*\/ opções de argumentos de linha de comando; */
         if(args.length > 0 && args[0] != null){
             /*\/ criar arquivo de configuração; */
-            if(args[0].equalsIgnoreCase("-c")){
+            if(args[0].equalsIgnoreCase("-c") && !conf.seArqConfExists()){
                 File fileConf = new File("deepsea.json");
                 if(!fileConf.exists()){
                     try {

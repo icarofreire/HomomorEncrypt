@@ -76,4 +76,9 @@ public final class ReadFileConf {
         return servers;
 	}
 
+    public boolean seArqConfExists() {
+        File fjson = new File(fileconf);
+        return fjson.exists();
+    }
+
 }

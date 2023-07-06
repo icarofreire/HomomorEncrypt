@@ -59,7 +59,7 @@ public final class BuscasDicom extends SftpClient {
     /*\/ caminho completo dos arquivos dicoms encontrados no servidor; */
     private final Vector<String> filesDicom = new Vector<String>();
     /*\/ info processo de realização do procedimento; */
-    private final boolean verbose = false;
+    private final boolean verbose = true;
     /*\/ classe para comprimir arquivos; */
     private final Compress comp = new Compress();
     /*\/ classe para multiplas conexões com bancos;*/
