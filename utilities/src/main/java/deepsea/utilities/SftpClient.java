@@ -265,4 +265,8 @@ public class SftpClient {
     public final ChannelSftp getChannel() {
         return channel;
     }
+
+    public final String getHost(){
+        return host;
+    }
 }

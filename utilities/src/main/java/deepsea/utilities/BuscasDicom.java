@@ -158,7 +158,7 @@ public final class BuscasDicom extends SftpClient {
         if (getChannel() == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
-        if(verbose) System.out.printf("Listing [%s]...%n", remoteDir);
+        if(verbose) System.out.printf("[%s] Listing [%s]...%n", getHost(), remoteDir);
         if(this.pastaBase == null){
             this.pastaBase = remoteDir;
         }
