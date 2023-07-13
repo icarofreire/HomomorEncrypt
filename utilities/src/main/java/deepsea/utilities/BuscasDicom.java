@@ -158,7 +158,7 @@ public final class BuscasDicom extends SftpClient {
         if (getChannel() == null) {
             throw new IllegalArgumentException("Connection is not available");
         }
-        if(verbose) System.out.printf("[%s] Listing [%s]...%n", getHost(), remoteDir);
+        // if(verbose) System.out.printf("[%s] Listing [%s]...%n", getHost(), remoteDir);
         if(this.pastaBase == null){
             this.pastaBase = remoteDir;
         }
@@ -360,7 +360,7 @@ public final class BuscasDicom extends SftpClient {
     efetuar downloads apenas de arquivos não registrados no log de arquivos enviados; 
     * */
     public final synchronized void scanServer(String remoteDir) throws SftpException, JSchException {
-        if(verbose) System.out.println(">> Realizando buscas no servidor;");
+        if(verbose) System.out.println(">> Realizando buscas no servidor " + getHost() + ";");
         final DBOperations banco = new DBOperations();
         logEvitFile.readInvFiles();
         // /*\/ criar multiplas conexões; */
