@@ -6,6 +6,11 @@ Executar projeto:
 ```
 $ gradle run
 ```
+Ao executar o projeto compilado, o arquivo de configuração `deepsea.json` deverá estar no mesmo
+diretório que o projeto compilado.
+```
+$ java -jar deepsea.jar
+```
 
 Compilar projeto:
 ```
@@ -18,7 +23,7 @@ $ DeepSea/app/build/libs/
 ```
 
 ## Arquivo de configuração
-Um arquivo de configuração vederá ser criado para descrever as credênciais
+Um arquivo de configuração deverá ser criado para descrever as credênciais
 de conexão SSH dos servidores que o DeepSea estabelecerá conexão.
 O arquivo será criado executando a  opção `-c` ao executar o `deepsea.jar`:
 ```
