@@ -22,4 +22,12 @@ public final class DBConf {
     public static final String bancoSec = "compact_old_dicoms";
     public static final String usuarioSec = "postgres";
     public static final String senhaSec = "PpSes2020!2019ProdPass";
+
+    /*\/ credenciais banco de ordem 3 -- 
+    onde serão transferidos os arquivos antigos,
+    antecessores a N meses; */
+    public static final String ipPorta3 = "10.1.10.39:5432";
+    public static final String banco3 = "compact_old_dicoms";
+    public static final String usuario3 = "postgres";
+    public static final String senha3 = "postgres";
 }

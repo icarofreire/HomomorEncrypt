@@ -82,9 +82,21 @@ public final class DataMigration {
             logerror.severe(erro);
         }
 
+        /*\/ conexão do banco 3; */
+        JDBCConnection con3 = new JDBCConnection();
+        banco.createDBAndTable(DBConf.ipPorta3, DBConf.usuario3, DBConf.senha3, DBConf.banco3);
+        banco.close();
+        boolean conOk3 = con3.createConnection(DBConf.ipPorta3, DBConf.banco3, DBConf.usuario3, DBConf.senha3);
+        if(!conOk3){
+            String erro = "** ERRO de conexão com o banco '" + DBConf.banco3 + "', em '" + DBConf.ipPorta3 + "', usuário '" + DBConf.usuario3 + "';";
+            LogFile logerror = new LogFile("error");
+            logerror.severe(erro);
+        }
+
         /*\/ migrar arquivos antigos; */
-        if(conOk1 && conOk2){
-            migrateOlderImagens(conPri, conSec);
+        if(conOk1){
+            if(conOk2) migrateOlderImagens(conPri, conSec);
+            if(conOk3) migrateOlderImagens(conPri, con3);
         }
     }
 
