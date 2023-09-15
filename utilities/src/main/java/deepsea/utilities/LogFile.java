@@ -21,12 +21,14 @@ public final class LogFile {
 
     public LogFile(){
         this.criarObterLog();
+        this.excluirArquivosLogsSimilares();
     }
 
     public LogFile(String nomeArquivoLog){
         this.arquivoLog = nomeArquivoLog + ".log";
         this.nomeLog = nomeArquivoLog;
         this.criarObterLog();
+        this.excluirArquivosLogsSimilares();
     }
 
     private void criarObterLog(){
@@ -38,6 +40,20 @@ public final class LogFile {
             this.logger.addHandler(this.handler);
         }catch(IOException e){
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * \/ excluir arquivos de logs similares gerados pelo paralelismo:
+     * Ex: teste.log, teste.log.1 ... teste.log.2;
+     */
+    private void excluirArquivosLogsSimilares(){
+        File baseDir = new File(".");
+        File[] arqsBaixados = baseDir.listFiles();
+        for(File f: arqsBaixados){
+            if(f.getName().indexOf(arquivoLog) == 0 && !arquivoLog.equals(f.getName())){
+                f.delete();
+            }
         }
     }
 
