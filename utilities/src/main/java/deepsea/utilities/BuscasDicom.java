@@ -220,7 +220,7 @@ public final class BuscasDicom extends SftpClient {
                 }
             }
         }else{
-            if(verbose) System.out.println("** [Max profund]");
+            // if(verbose) System.out.println("** [Max profund]");
         }
     }
 
