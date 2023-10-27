@@ -48,7 +48,7 @@ public final class Compress {
         boolean ok = false;
         try{
             Path arqCompPath = Paths.get(arqCompress);
-            int size = new Long(Files.size(arqCompPath)).intValue();
+            int size = (int) Files.size(arqCompPath);
             InputStream in = Files.newInputStream(arqCompPath);
             OutputStream fout = Files.newOutputStream(Paths.get(fileFinal));
             BufferedOutputStream out = new BufferedOutputStream(fout);
@@ -69,7 +69,7 @@ public final class Compress {
     public boolean decompress(String arqCompressed, String fileFinal) {
         boolean ok = false;
         try{
-            int size = new Long(Files.size(Paths.get(arqCompressed))).intValue();
+            int size = (int) Files.size(Paths.get(arqCompressed));
             InputStream fin = Files.newInputStream(Paths.get(arqCompressed));
             BufferedInputStream in = new BufferedInputStream(fin);
             OutputStream out = Files.newOutputStream(Paths.get(fileFinal));
