@@ -4,50 +4,47 @@
 package deepsea.app;
 
 
-import deepsea.utilities.Server;
-import deepsea.utilities.Scheduler;
-import deepsea.utilities.ReadFileConf;
+import deepsea.utilities.Encry;
+import deepsea.utilities.Encry.HomoEncry;
 
 import java.util.Vector;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
 
 public class App {
     public static void main(String[] args) {
 
-        ReadFileConf conf = new ReadFileConf();
-        /*\/ atribuir servidores pacs; */
-        Vector<Server> servers = conf.readJsonConf();
+        try{
+            Encry en = new Encry();
+            HomoEncry homo = en.new HomoEncry();
 
-        Scheduler sche = new Scheduler();
-        sche.setServers(servers);
-        /*\/ iniciar schedule para multiplos servidores; */
-        if(args.length == 0 && conf.seArqConfExists()) {
-            sche.iniParallel();
-        }
+            String texto = "CABtesteXIP";
+            String buscaSubTexto = "tesdte";
 
-        /*\/ opções de argumentos de linha de comando; */
-        if(args.length > 0 && args[0] != null){
-            /*\/ criar arquivo de configuração; */
-            if(args[0].equalsIgnoreCase("-c") && !conf.seArqConfExists()){
-                File fileConf = new File("deepsea.json");
-                if(!fileConf.exists()){
-                    try {
-                        FileWriter myWriter = new FileWriter("deepsea.json", false);
-                        myWriter.write("{\n");
-                        myWriter.write("\t\"servers\":\n");
-                        myWriter.write("\t[\n");
-                        myWriter.write("\t\t{ \"host\": \"<ip-servidor>\", \"user\": \"<usuario>\", \"password\": \"<senha>\", \"folder\": \"</home/pasta-imagens>\" },\n");
-                        myWriter.write("\t\t{ \"host\": \"\", \"user\": \"\", \"password\": \"\", \"folder\": \"\" }\n");
-                        myWriter.write("\t]\n");
-                        myWriter.write("}\n");
-                        myWriter.close();
-                    } catch (IOException e) { e.printStackTrace(); }
-                }
-            }
-        }
+            System.out.println( "Texto: " + texto );
+            System.out.println( "Encry: " + homo.encryptHomo(texto) );
+            System.out.println( "Decry: " + homo.decryptHomo(homo.encryptHomo(texto)) );
+            System.out.println( homo.searchInHomo(buscaSubTexto, homo.encryptHomo(texto)) );
+            System.out.println( homo.searchInHomo("teste", homo.encryptHomo(texto)) );
+
+        }catch(
+            IOException |
+            NoSuchPaddingException |
+            NoSuchAlgorithmException |
+            InvalidKeyException |
+            InvalidKeySpecException |
+            BadPaddingException |
+            IllegalBlockSizeException e
+        ){}
 
     }
 }
